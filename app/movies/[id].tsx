@@ -1,12 +1,12 @@
-import {View, Text, StyleSheet} from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet } from 'react-native'
+import React from 'react'
 
 const MovieDetails = () => {
-    return (
-        <View>
-            <Text>Profile Page</Text>
-        </View>
-    )
+  return (
+    <View>
+      <Text>Profile Page</Text>
+    </View>
+  )
 }
 
-export default MovieDetails;
+export default MovieDetails
