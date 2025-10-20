@@ -11,7 +11,7 @@ export const fetchMovies = async ({ query }: { query: string }) => {
   // inserting the endpoint (for popular movies when there is no query)
   const hasQuery = typeof query === 'string' && query.trim().length > 0
   const endpoint = hasQuery
-    ? `${TMDB_CONFIG.BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+    ? `${TMDB_CONFIG.BASE_URL}/search/movie?include_adult=false&include_video=false&language=en-US&page=1&query=${encodeURIComponent(query)}`
     : `${TMDB_CONFIG.BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
 
   //making the request to the Backend

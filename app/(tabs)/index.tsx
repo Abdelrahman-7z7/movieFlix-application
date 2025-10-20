@@ -1,3 +1,4 @@
+import MovieCard from '@/components/MovieCard'
 import SearchBar from '@/components/SearchBar'
 import { icons } from '@/constants/icons'
 import { images } from '@/constants/images'
@@ -20,7 +21,7 @@ export default function Index() {
     })
   )
 
-  console.log('Movies data:', movies, 'Error:', moviesError)
+  // console.log('Movies data:', movies, 'Error:', moviesError)
 
   return (
     <View className="flex-1 bg-primary">
@@ -54,9 +55,10 @@ export default function Index() {
                 data={movies}
                 keyExtractor={item => item.id} //helps react-native to figure out how many item do we have and which position does it have in the list
                 renderItem={({ item }) => (
-                  <Text key={item.id} className="text-white text-sm">
-                    {item.title}
-                  </Text>
+                  // <Text key={item.id} className="text-white text-sm">
+                  //   {item.title}
+                  // </Text>
+                  <MovieCard {...item} />
                 )} //immediately calling the function ({item})=>{} that means it will not immediately be returned
                 numColumns={3}
                 columnWrapperStyle={{
