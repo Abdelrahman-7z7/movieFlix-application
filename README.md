@@ -1,287 +1,131 @@
 <div align="center">
-  <br />
-    <a href="https://www.youtube.com/watch?v=f8Z9JyB2EIE" target="_blank">
-      <img src="assets/readme/hero.webp" alt="Project Banner">
-    </a>
-  <br />
-
-  <div>
-    <img src="https://img.shields.io/badge/-React_Native-black?style=for-the-badge&logoColor=white&logo=react&color=61DAFB" alt="React Native" />
-    <img src="https://img.shields.io/badge/-Expo-black?style=for-the-badge&logoColor=white&logo=expo&color=000020" alt="Expo" />
-    <img src="https://img.shields.io/badge/-TypeScript-black?style=for-the-badge&logoColor=white&logo=typescript&color=3178C6" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/-Tailwind_CSS-black?style=for-the-badge&logoColor=white&logo=tailwindcss&color=06B6D4" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/-Appwrite-black?style=for-the-badge&logoColor=white&logo=appwrite&color=F02E65" alt="Appwrite" />
-  </div>
-
-  <h3 align="center">A Movie Finding App with Extensive Search</h3>
-
-   <div align="center">
-     Build this project step by step with our detailed tutorial on <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a> YouTube. Join the JSM family!
-    </div>
+  <img src="https://img.shields.io/badge/React%20Native-61DAFB?logo=react&logoColor=white&style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Expo-000020?logo=expo&logoColor=white&style=for-the-badge" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=for-the-badge" />
+  <img src="https://img.shields.io/badge/NativeWind-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge" />
 </div>
 
-## 📋 <a name="table">Table of Contents</a>
+## MovieFlix — React Native + Expo
 
-1. 🤖 [Introduction](#introduction)
+A production‑ready movie discovery app. Browse trending titles, search the TMDB catalog, and view rich details. Built with Expo Router, TypeScript, and a utility‑first design system.
 
-2. ⚙️ [Tech Stack](#tech-stack)
+## Contents
+- Introduction
+- Tech Stack
+- Features
+- App Architecture
+- Project Structure
+- Setup & Scripts
+- Environment Variables
+- API Integration
+- Conventions
+- Troubleshooting
 
-3. 🔋 [Features](#features)
+## Introduction
+MovieFlix provides:
+- Fast home feed with trending and latest movies
+- Powerful search with debounced input
+- Movie details screen with poster, ratings, genres, budget, revenue, and production companies
+- Pull‑to‑refresh across screens
+- Notch‑safe UI with dynamic status inset coloring
 
-4. 🤸 [Quick Start](#quick-start)
+## Tech Stack
+- Expo SDK 52 (Expo Router, Metro)
+- React Native 0.76 + TypeScript
+- NativeWind (Tailwind‑like styling)
+- Appwrite (for trending data) and TMDB (for movie data)
 
-5. 🕸️ [Snippets (Code to Copy)](#snippets)
+## Features
+- Home: trending (Appwrite) + latest (TMDB)
+- Search: query TMDB, show grid of results
+- Details: posters, info, rating, overview, genres, budget/revenue
+- Global RefreshableScroll for pull‑to‑refresh
+- SafeArea handling and flexible status bar coloring
 
-6. 🔗 [Assets](#links)
+## App Architecture
+- File‑based routing via Expo Router (`app/`)
+- Stateless UI components in `components/`
+- Data layer in `services/` with `useFetch` hook for async state
+- Types in `interfaces/`
+- Centralized image/icon constants in `constants/`
+- Tailwind config via NativeWind + `globals.css`
 
-7. 🚀 [More](#more)
+## Project Structure
+```
+app/
+  (tabs)/
+    _layout.tsx           # Bottom tabs layout
+    index.tsx             # Home screen (Trending + Latest)
+    search.tsx            # Search screen
+    save.tsx              # Saved (stub)
+    profile.tsx           # Profile (stub)
+  _layout.tsx             # Root stack, SafeArea & StatusBar
+  movie/[id].tsx          # Movie details screen
 
-## 🚨 Tutorial
+components/
+  MovieCard.tsx           # Grid card for a movie
+  TrendıngCard.tsx        # Horizontal trending card
+  SearchBar.tsx           # Search input with CTA
+  RefreshableScroll.tsx   # Reusable pull‑to‑refresh wrapper
+  TopInset.tsx            # Optional notch spacer
 
-This repository contains the code corresponding to an in-depth tutorial available on our YouTube channel, <a href="https://www.youtube.com/@javascriptmastery/videos" target="_blank"><b>JavaScript Mastery</b></a>.
+services/
+  api.ts                  # TMDB API calls
+  appwrite.ts             # Appwrite client & queries (trending)
+  usefetch.ts             # Generic fetching hook
 
-If you prefer visual learning, this is the perfect resource for you. Follow our tutorial to learn how to build projects like these step-by-step in a beginner-friendly manner!
+constants/
+  icons.ts, images.ts     # Local assets
 
-<a href="https://www.youtube.com/watch?v=f8Z9JyB2EIE" target="_blank"><img src="https://github.com/sujatagunale/EasyRead/assets/151519281/1736fca5-a031-4854-8c09-bc110e3bc16d" /></a>
+interfaces/
+  interfaces.d.ts         # Movie, MovieDetails, TrendingMovie types
 
-## <a name="introduction">🤖 Introduction</a>
+tailwind.config.js        # Theme tokens (primary, text, etc.)
+app/globals.css           # Tailwind (NativeWind) base
+```
 
-Built with Expo, TypeScript, and Tailwind CSS, this app fetches movies and creates a popularity algorithm using Appwrite. It provides users with a seamless browsing experience, ranking movies based on various engagement metrics. The app leverages modern UI/UX principles for a responsive and visually appealing interface, ensuring real-world scalability and performance.
-
-If you're getting started and need assistance or face any bugs, join our active Discord community with over **50k+** members. It's a place where people help each other out.
-
-<a href="https://discord.com/invite/n6EdbFJ" target="_blank"><img src="https://github.com/sujatagunale/EasyRead/assets/151519281/618f4872-1e10-42da-8213-1d69e486d02e" /></a>
-
-## <a name="tech-stack">⚙️ Tech Stack</a>
-
-- **[Expo](https://expo.dev/)** is an open-source platform for building universal native apps (Android, iOS, web) using JavaScript/TypeScript and React Native. It features file-based routing via Expo Router, fast refresh, native modules for camera/maps/notifications, over-the-air updates (EAS), and streamlined app deployment.
-
-- **[React Native](https://reactnative.dev/)** is a framework for building mobile UIs with React. It enables component‑based, cross-platform development with declarative UI, deep native API support, and is tightly integrated with Expo for navigation and native capabilities.
-
-- **[Appwrite](https://jsm.dev/rn25-appwrite)** is an open-source backend-as-a-service platform offering secure authentication (email/password, OAuth, SMS, magic links), databases, file storage with compression/encryption, real-time messaging, serverless functions, and static site hosting via Appwrite Sites—all managed through a unified console and microservices architecture.
-
-- **[TypeScript](https://www.typescriptlang.org/)** is a statically-typed superset of JavaScript providing type annotations, interfaces, enums, generics, and enhanced tooling. It improves error detection, code quality, and scalability—ideal for robust, maintainable projects.
-
-- **[Tailwind CSS](https://tailwindcss.com/)** is a utility-first CSS framework enabling rapid UI design via low-level classes. In React Native/Expo, it’s commonly used with NativeWind to apply Tailwind-style utilities to mobile components.
-
-- **[NativeWind](https://www.nativewind.dev/)** brings Tailwind CSS to React Native and Expo, allowing you to style mobile components using utility-first classes for fast, consistent, and responsive UI design.
-
-## <a name="features">🔋 Features</a>
-
-### Features of the Mobile Movie AppProject
-
-👉 **Real-time data**: Fetching and displaying real-time movie data
-
-👉 **Home Page**: Featured and discover movies
-
-👉 **Search Page**: Search for your favorite movies
-
-👉 **Popularity algorithm**: Track user searches to display the most popular movies
-
-and many more, including code architecture and reusability.
-
-## <a name="quick-start">🤸 Quick Start</a>
-
-Follow these steps to set up the project locally on your machine.
-
-**Prerequisites**
-
-Make sure you have the following installed on your machine:
-
-- [Git](https://git-scm.com/)
-
-- [Node.js](https://nodejs.org/en)
-
-- [npm](https://www.npmjs.com/) (Node Package Manager)
-
-**Cloning the Repository**
-
+## Setup & Scripts
 ```bash
-git clone https://github.com/adrianhajdin/rn-movie-app.git
+# install deps
+pnpm install
 
-cd rn-movie-app
+# start dev server
+pnpm start
+
+# format
+pnpm run format
+pnpm run format:check
+
+# lint
+pnpm run lint
 ```
 
-**Installation**
-
-Install the project dependencies using npm:
-
-```bash
-npm install
+## Environment Variables
+Create `.env` in project root:
+```
+EXPO_PUBLIC_MOVIE_API_KEY=your_tmdb_token_or_api_key
+EXPO_PUBLIC_PROJECT_URL=...  # if Appwrite used
+EXPO_PUBLIC_API_KEY=...      # if Appwrite used
 ```
 
-**Set Up Environment Variables**
+## API Integration
+- TMDB base: `https://api.themoviedb.org/3`
+- Images: `https://image.tmdb.org/t/p/w500${poster_path}`
+- Details endpoint used: `/movie/:id`
 
-Create a new file named `.env` in the root of your project and add the following content:
+See `services/api.ts` for implemented calls.
 
-```env
+## Conventions
+- TypeScript everywhere; strong types in `interfaces/`
+- Utility classes via NativeWind (see `tailwind.config.js`)
+- Components use descriptive prop names; avoid one‑letter vars
+- Prefer early returns; avoid deep nesting
 
-EXPO_PUBLIC_MOVIE_API_KEY=
+## Troubleshooting
+- Refresh indicator hidden by notch → root `app/_layout.tsx` wraps in `SafeAreaView` and uses a top inset
+- Pull‑to‑refresh not visible → `RefreshableScroll` enables bounce and sets iOS/Android indicator props
+- Image not showing → ensure `poster_path` present; fallback placeholder is used on details screen
 
-EXPO_PUBLIC_APPWRITE_PROJECT_ID=
+---
 
-EXPO_PUBLIC_APPWRITE_DATABASE_ID=
-
-EXPO_PUBLIC_APPWRITE_COLLECTION_ID=
-```
-
-Replace the placeholder values with your actual TMDB API key, Appwrite project ID, Database ID, and Collection ID. You can obtain these credentials by signing up on the [Appwrite](https://jsm.dev/rn25-appwrite), [TMDB](https://www.themoviedb.org/login).
-
-**Running the Project**
-
-```bash
-
-npx expo start
-
-```
-
-Open your ExpoGO app on your phone and scan the QR code to view the project.
-
-## <a name="snippets">🕸️ Snippets</a>
-
-<details>
-
-<summary><code>tailwind.config.js</code></summary>
-
-```typescript
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
-  presets: [require("nativewind/preset")],
-  theme: {
-    extend: {
-      colors: {
-        primary: "#030014",
-        secondary: "#151312",
-        ratingBox: "#221F3D",
-        searchBar: "#0F0D23",
-        text: "#9CA4AB",
-        darkAccent: "#AB8BFF",
-        accentText: "#A8B5DB",
-        secondaryText: "#D6C7FF",
-      },
-    },
-  },
-  plugins: [],
-};
-```
-
-</details>
-
-<details>
-
-<summary><code>app/globals.css</code></summary>
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-</details>
-
-<details>
-
-<summary><code>interfaces/interfaces.d.ts</code></summary>
-
-```typescript
-interface Movie {
-  id: number;
-  title: string;
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path: string;
-  release_date: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-}
-
-interface TrendingMovie {
-  searchTerm: string;
-  movie_id: number;
-  title: string;
-  count: number;
-  poster_url: string;
-}
-
-interface MovieDetails {
-  adult: boolean;
-  backdrop_path: string | null;
-  belongs_to_collection: {
-    id: number;
-    name: string;
-    poster_path: string;
-    backdrop_path: string;
-  } | null;
-  budget: number;
-  genres: {
-    id: number;
-    name: string;
-  }[];
-  homepage: string | null;
-  id: number;
-  imdb_id: string | null;
-  original_language: string;
-  original_title: string;
-  overview: string | null;
-  popularity: number;
-  poster_path: string | null;
-  production_companies: {
-    id: number;
-    logo_path: string | null;
-    name: string;
-    origin_country: string;
-  }[];
-  production_countries: {
-    iso_3166_1: string;
-    name: string;
-  }[];
-  release_date: string;
-  revenue: number;
-  runtime: number | null;
-  spoken_languages: {
-    english_name: string;
-    iso_639_1: string;
-    name: string;
-  }[];
-  status: string;
-  tagline: string | null;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-}
-
-interface TrendingCardProps {
-  movie: TrendingMovie;
-  index: number;
-}
-```
-
-</details>
-
-## <a name="links">🔗 Assets</a>
-
-Assets and snippets used in the project can be found in the **[video kit](https://jsm.dev/rn25-movie)**.
-
-<a href="https://jsm.dev/rn25-movie" target="_blank">
-  <img src="assets/readme/videokit.webp" alt="Video Kit Banner">
-</a>
-
-## <a name="more">🚀 More</a>
-
-**Advance your skills with Next.js Pro Course**
-
-Enjoyed creating this project? Dive deeper into our PRO courses for a richer learning adventure. They're packed with
-
-detailed explanations, cool features, and exercises to boost your skills. Give it a go!
-
-<a href="https://jsm.dev/rn25-jsm" target="_blank">
-   <img src="assets/readme/jsmpro.webp" alt="Project Banner">
-</a>
+MIT License. No external promotional content or authorship branding included.
