@@ -1,85 +1,114 @@
-import MovieCard from '@/components/MovieCard'
-import SearchBar from '@/components/SearchBar'
-import { icons } from '@/constants/icons'
-import { images } from '@/constants/images'
-import { fetchMovies } from '@/services/api'
-import useFetch from '@/services/useFetch'
-import { useRouter } from 'expo-router'
-import { ActivityIndicator, FlatList, Image, ScrollView, Text, View } from 'react-native'
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+  Image,
+  FlatList,
+} from "react-native";
+import { useRouter } from "expo-router";
 
-export default function Index() {
-  const router = useRouter()
+import useFetch from "@/services/usefetch";
+import { fetchMovies } from "@/services/api";
+import { getTrendingMovies } from "@/services/appwrite";
 
-  //fetching the data Through the custome useFetch
+import { icons } from "@/constants/icons";
+import { images } from "@/constants/images";
+
+import SearchBar from "@/components/SearchBar";
+import MovieCard from "@/components/MovieCard";
+import TrendingCard from "@/components/TrendıngCard";
+
+const Index = () => {
+  const router = useRouter();
+
+  const {
+    data: TrendingMovies,
+    loading:trendingLoading,
+    error:trendingError
+  } = useFetch(() => getTrendingMovies());
+
+
   const {
     data: movies,
     loading: moviesLoading,
     error: moviesError,
-  } = useFetch(() =>
-    fetchMovies({
-      query: '',
-    })
-  )
-
-  // console.log('Movies data:', movies, 'Error:', moviesError)
+  } = useFetch(() => fetchMovies({ query: "" }));
 
   return (
     <View className="flex-1 bg-primary">
-      <Image source={images.bg} className="w-full absolute z-0" />
+      <Image
+        source={images.bg}
+        className="absolute w-full z-0"
+        resizeMode="cover"
+      />
 
-      {/* applying "scrollView" which make the whole screen scrollable */}
       <ScrollView
         className="flex-1 px-5"
-        showsVerticalScrollIndicator={false} //hides the scrol bar
-        contentContainerStyle={{
-          //define the scroll high of the whole page
-          minHeight: '100%',
-          paddingBottom: 10,
-        }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
       >
         <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
 
-        {/* fetching the loading status if we are currently getting the movies */}
-        {/* we are going to check for loading if we are fetching the data, if there is no loading then we might have an error, if we dont have an error then we have the data and we can render the page */}
-        {moviesLoading ? (
-          <ActivityIndicator size="large" color="0000ff" className="mt-10 self-center" />
-        ) : moviesError ? (
-          <Text>Error: {moviesError?.message}</Text>
+        {moviesLoading || trendingLoading ? (
+          <ActivityIndicator
+            size="large"
+            color="#0000ff"
+            className="mt-10 self-center"
+          />
+        ) : moviesError || trendingError ? (
+          <Text>Error: {moviesError?.message || trendingError?.message}</Text>
         ) : (
-          <View className="flex">
-            {/* pushing the search content to the SearchBar component */}
+          <View className="flex-1 mt-5">
             <SearchBar
-              onPress={() => router.push('/search')}
+              onPress={() => {
+                router.push("/search");
+              }}
               placeholder="Search for a movie"
-              value=""
-              onChangeText={() => {}}
-              editable={false}
             />
-            <>
-              <Text className="text-lg text-white font-bold mt-5 mb-3">Latest Movies</Text>
-              <FlatList
-                data={movies}
-                keyExtractor={item => item.id} //helps react-native to figure out how many item do we have and which position does it have in the list
-                renderItem={({ item }) => (
-                  // <Text key={item.id} className="text-white text-sm">
-                  //   {item.title}
-                  // </Text>
-                  <MovieCard {...item} />
-                )} //immediately calling the function ({item})=>{} that means it will not immediately be returned
-                numColumns={3}
-                columnWrapperStyle={{
-                  justifyContent: 'flex-start',
-                  gap: 20,
-                  paddingRight: 5,
-                  marginBottom: 10,
-                }}
-                className="mt-2 pb-32"
-                scrollEnabled={false}
+
+            {TrendingMovies && (
+              <View className="mt-10">
+                <Text className="text-lg text-white font-bold mb-3">Trending Movies</Text>
+
+              </View>
+            )}
+
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              ItemSeparatorComponent={() => <View className="w-4" />}
+              className="mb-4 mt-3"
+              data={TrendingMovies as TrendingMovie[]}
+              renderItem={({item, index}) =>(
+                <TrendingCard movie={item} index={index}/>
+              ) }
+              keyExtractor={(item) => item.movie_id.toString()}
               />
-            </>
+
+            <Text className="text-lg text-white font-bold mt-5 mb-3">
+              Latest Movies
+            </Text>
+
+            <FlatList
+              data={movies}
+              renderItem={({ item }) => <MovieCard {...item} />}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              columnWrapperStyle={{
+                justifyContent: "flex-start",
+                gap: 20,
+                paddingRight: 5,
+                marginBottom: 10,
+              }}
+              className="mt-2 pb-32"
+              scrollEnabled={false}
+            />
           </View>
         )}
       </ScrollView>
     </View>
-  )
-}
+  );
+};
+
+export default Index;

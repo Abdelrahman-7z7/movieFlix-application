@@ -1,26 +1,30 @@
-import { Stack } from 'expo-router'
-import './globals.css'
-import { StatusBar } from 'react-native'
+import "react-native-url-polyfill/auto";
+import { Stack } from "expo-router";
+import "./globals.css";
+import { StatusBar } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 
 export default function RootLayout() {
   return (
-    <>
-      <StatusBar hidden={true} />
+    <SafeAreaProvider>
+      <StatusBar hidden={true} backgroundColor="#030014" barStyle="light-content" translucent={true} />
 
-      <Stack>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="movies/[id]"
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack>
-    </>
-  )
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#030014' }} edges={["top", "left", "right"]}>
+        <Stack>
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="movie/[id]"
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
 }
