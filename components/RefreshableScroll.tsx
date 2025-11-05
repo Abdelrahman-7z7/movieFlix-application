@@ -1,5 +1,5 @@
-import React from 'react'
-import { ScrollView, RefreshControl, ScrollViewProps } from 'react-native'
+import React from "react";
+import { ScrollView, RefreshControl, ScrollViewProps } from "react-native";
 
 type RefreshableScrollProps = ScrollViewProps & {
   onRefresh: () => Promise<void> | void;
@@ -7,29 +7,29 @@ type RefreshableScrollProps = ScrollViewProps & {
   indicatorColor?: string;
   androidColors?: string[];
   progressBackgroundColor?: string;
-}
+};
 
 const RefreshableScroll = ({
   children,
   onRefresh,
   refreshing: refreshingProp,
-  indicatorColor = '#fff',
+  indicatorColor = "#fff",
   androidColors,
-  progressBackgroundColor = 'transparent',
+  progressBackgroundColor = "transparent",
   ...rest
 }: RefreshableScrollProps) => {
-  const [internalRefreshing, setInternalRefreshing] = React.useState(false)
+  const [internalRefreshing, setInternalRefreshing] = React.useState(false);
 
-  const refreshing = refreshingProp ?? internalRefreshing
+  const refreshing = refreshingProp ?? internalRefreshing;
 
   const handleRefresh = React.useCallback(async () => {
-    if (refreshingProp === undefined) setInternalRefreshing(true)
+    if (refreshingProp === undefined) setInternalRefreshing(true);
     try {
-      await onRefresh()
+      await onRefresh();
     } finally {
-      if (refreshingProp === undefined) setInternalRefreshing(false)
+      if (refreshingProp === undefined) setInternalRefreshing(false);
     }
-  }, [onRefresh, refreshingProp])
+  }, [onRefresh, refreshingProp]);
 
   return (
     <ScrollView
@@ -48,9 +48,7 @@ const RefreshableScroll = ({
     >
       {children}
     </ScrollView>
-  )
-}
+  );
+};
 
-export default RefreshableScroll
-
-
+export default RefreshableScroll;

@@ -26,9 +26,11 @@ export const updateSearchCount = async (query: string, movie: Movie) => {
       throw searchError;
     }
 
-
-    console.log(existingRecords.length > 0 ? "Updating existing record" : "Inserting new record");
-
+    console.log(
+      existingRecords.length > 0
+        ? "Updating existing record"
+        : "Inserting new record",
+    );
 
     if (existingRecords && existingRecords.length > 0) {
       // Update existing record - increment count
@@ -47,15 +49,13 @@ export const updateSearchCount = async (query: string, movie: Movie) => {
       // NOTE: your table defines movie_id as UUID. TMDB ids are numbers, so for now
       // we generate a UUID placeholder. When you share final schema/mapping, we'll align it.
       // const generatedUuid = (global as any)?.crypto?.randomUUID?.() || "00000000-0000-0000-0000-000000000001";
-      const { error: insertError } = await supabase
-        .from(TABLE_NAME)
-        .insert({
-          searchTerm: query,
-          movie_id: movie.id,
-          title: movie.title,
-          count: 1,
-          poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-        });
+      const { error: insertError } = await supabase.from(TABLE_NAME).insert({
+        searchTerm: query,
+        movie_id: movie.id,
+        title: movie.title,
+        count: 1,
+        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+      });
 
       if (insertError) {
         console.error("Error creating record:", insertError);
@@ -97,15 +97,19 @@ export const updateSearchCount = async (query: string, movie: Movie) => {
 //   }
 // };
 
-export const getTrendingMovies = async (): Promise<TrendingMovie[] | undefined> => {
-  try{
-    const {data, error} = await supabase.from(TABLE_NAME).select("*").order("count", {ascending: false}).limit(5);
+export const getTrendingMovies = async (): Promise<
+  TrendingMovie[] | undefined
+> => {
+  try {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select("*")
+      .order("count", { ascending: false })
+      .limit(5);
 
     return data as unknown as TrendingMovie[];
-  }catch(error){
+  } catch (error) {
     console.error("Error in getTrendingMovies:", error);
     return undefined;
   }
-}
-
-
+};

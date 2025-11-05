@@ -24,10 +24,9 @@ const Index = () => {
 
   const {
     data: TrendingMovies,
-    loading:trendingLoading,
-    error:trendingError
+    loading: trendingLoading,
+    error: trendingError,
   } = useFetch(() => getTrendingMovies());
-
 
   const {
     data: movies,
@@ -69,8 +68,9 @@ const Index = () => {
 
             {TrendingMovies && (
               <View className="mt-10">
-                <Text className="text-lg text-white font-bold mb-3">Trending Movies</Text>
-
+                <Text className="text-lg text-white font-bold mb-3">
+                  Trending Movies
+                </Text>
               </View>
             )}
 
@@ -80,11 +80,11 @@ const Index = () => {
               ItemSeparatorComponent={() => <View className="w-4" />}
               className="mb-4 mt-3"
               data={TrendingMovies as TrendingMovie[]}
-              renderItem={({item, index}) =>(
-                <TrendingCard movie={item} index={index}/>
-              ) }
+              renderItem={({ item, index }) => (
+                <TrendingCard movie={item} index={index} />
+              )}
               keyExtractor={(item) => item.movie_id.toString()}
-              />
+            />
 
             <Text className="text-lg text-white font-bold mt-5 mb-3">
               Latest Movies

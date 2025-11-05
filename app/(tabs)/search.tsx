@@ -15,7 +15,7 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
-    data: movies = [],  
+    data: movies = [],
     loading,
     error,
     refetch: loadMovies,
@@ -32,15 +32,19 @@ const Search = () => {
       if (searchQuery.trim()) {
         reset(); // Clear previous results
         const fetchedMovies = await loadMovies(); // ✅ Get fresh movies directly
-  
-        if (fetchedMovies && Array.isArray(fetchedMovies) && fetchedMovies.length > 0) {
+
+        if (
+          fetchedMovies &&
+          Array.isArray(fetchedMovies) &&
+          fetchedMovies.length > 0
+        ) {
           await updateSearchCount(searchQuery, fetchedMovies[0]); // ✅ Use correct result
         }
       } else {
         reset();
       }
     }, 1000);
-  
+
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 

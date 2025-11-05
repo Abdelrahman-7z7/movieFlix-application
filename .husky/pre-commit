@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+# Run Prettier check before committing (fallback if not installed)
+if npx --yes prettier@latest --version >/dev/null 2>&1; then
+  npx --yes prettier@latest --check .
+else
+  echo "Prettier not found locally; skipping Prettier check"
+fi
+
+# Then run lint-staged for staged files
+npx lint-staged
