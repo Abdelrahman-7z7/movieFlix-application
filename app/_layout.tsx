@@ -18,7 +18,12 @@ export default function RootLayout() {
         style={{ flex: 1, backgroundColor: "#030014" }}
         edges={["top", "left", "right"]}
       >
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+          initialRouteName="(tabs)"
+        >
           <Stack.Screen
             name="(tabs)"
             options={{
