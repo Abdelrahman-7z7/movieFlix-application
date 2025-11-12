@@ -10,6 +10,7 @@
 A production‑ready movie discovery app. Browse trending titles, search the TMDB catalog, and view rich details. Built with Expo Router, TypeScript, and a utility‑first design system.
 
 ## Contents
+
 - Introduction
 - Tech Stack
 - Features
@@ -22,7 +23,9 @@ A production‑ready movie discovery app. Browse trending titles, search the TMD
 - Troubleshooting
 
 ## Introduction
+
 MovieFlix provides:
+
 - Fast home feed with trending and latest movies
 - Powerful search with debounced input
 - Movie details screen with poster, ratings, genres, budget, revenue, and production companies
@@ -30,12 +33,14 @@ MovieFlix provides:
 - Notch‑safe UI with dynamic status inset coloring
 
 ## Tech Stack
+
 - Expo SDK 52 (Expo Router, Metro)
 - React Native 0.76 + TypeScript
 - NativeWind (Tailwind‑like styling)
 - Appwrite (for trending data) and TMDB (for movie data)
 
 ## Features
+
 - Home: trending (Appwrite) + latest (TMDB)
 - Search: query TMDB, show grid of results
 - Details: posters, info, rating, overview, genres, budget/revenue
@@ -43,6 +48,7 @@ MovieFlix provides:
 - SafeArea handling and flexible status bar coloring
 
 ## App Architecture
+
 - File‑based routing via Expo Router (`app/`)
 - Stateless UI components in `components/`
 - Data layer in `services/` with `useFetch` hook for async state
@@ -51,6 +57,7 @@ MovieFlix provides:
 - Tailwind config via NativeWind + `globals.css`
 
 ## Project Structure
+
 ```
 app/
   (tabs)/
@@ -85,6 +92,7 @@ app/globals.css           # Tailwind (NativeWind) base
 ```
 
 ## Setup & Scripts
+
 ```bash
 # install deps
 pnpm install
@@ -101,7 +109,9 @@ pnpm run lint
 ```
 
 ## Environment Variables
+
 Create `.env` in project root:
+
 ```
 EXPO_PUBLIC_MOVIE_API_KEY=your_tmdb_token_or_api_key
 EXPO_PUBLIC_PROJECT_URL=...  # if Appwrite used
@@ -109,6 +119,7 @@ EXPO_PUBLIC_API_KEY=...      # if Appwrite used
 ```
 
 ## API Integration
+
 - TMDB base: `https://api.themoviedb.org/3`
 - Images: `https://image.tmdb.org/t/p/w500${poster_path}`
 - Details endpoint used: `/movie/:id`
@@ -116,12 +127,14 @@ EXPO_PUBLIC_API_KEY=...      # if Appwrite used
 See `services/api.ts` for implemented calls.
 
 ## Conventions
+
 - TypeScript everywhere; strong types in `interfaces/`
 - Utility classes via NativeWind (see `tailwind.config.js`)
 - Components use descriptive prop names; avoid one‑letter vars
 - Prefer early returns; avoid deep nesting
 
 ## Troubleshooting
+
 - Refresh indicator hidden by notch → root `app/_layout.tsx` wraps in `SafeAreaView` and uses a top inset
 - Pull‑to‑refresh not visible → `RefreshableScroll` enables bounce and sets iOS/Android indicator props
 - Image not showing → ensure `poster_path` present; fallback placeholder is used on details screen
