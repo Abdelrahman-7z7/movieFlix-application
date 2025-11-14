@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, ActivityIndicator, FlatList, Image } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
-import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
 
 import useFetch from "@/services/usefetch";
@@ -50,10 +50,16 @@ const Search = () => {
 
   return (
     <View className="flex-1 bg-primary">
-      <Image
-        source={images.bg}
-        className="flex-1 absolute w-full z-0"
-        resizeMode="cover"
+      <LinearGradient
+        colors={["#030014", "#0F0D23"]}
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
+        }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       />
 
       <FlatList
