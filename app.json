@@ -12,7 +12,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.rnmovieapp.dev",
-      "associatedDomains": ["applinks:yourapp.com"]
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["myapp"]
+          }
+        ]
+      }
     },
 
     "android": {
@@ -20,10 +26,19 @@
       "intentFilters": [
         {
           "action": "VIEW",
+          "autoVerify": true,
           "data": [
             {
               "scheme": "myapp",
               "host": "verify-email"
+            },
+            {
+              "scheme": "myapp", 
+              "host": "reset-password"
+            },
+            {
+              "scheme": "exp",
+              "host": "127.0.0.1"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
