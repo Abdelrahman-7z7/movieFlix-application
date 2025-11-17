@@ -33,7 +33,7 @@
               "host": "verify-email"
             },
             {
-              "scheme": "myapp", 
+              "scheme": "myapp",
               "host": "reset-password"
             },
             {

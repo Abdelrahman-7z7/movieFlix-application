@@ -23,8 +23,10 @@ import { icons } from "@/constants/icons";
 export default function ResetPassword() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const initialAccessToken = typeof params.access_token === "string" ? params.access_token : undefined;
-  const initialRefreshToken = typeof params.refresh_token === "string" ? params.refresh_token : undefined;
+  const initialAccessToken =
+    typeof params.access_token === "string" ? params.access_token : undefined;
+  const initialRefreshToken =
+    typeof params.refresh_token === "string" ? params.refresh_token : undefined;
 
   const newPasswordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
@@ -33,13 +35,13 @@ export default function ResetPassword() {
 
   // ✅ New: confirmation state (mirrors VerifyEmail)
   const [confirming, setConfirming] = useState(false);
-  const [confirmationStatus, setConfirmationStatus] = useState<"idle" | "confirming" | "success" | "error">(
-    initialAccessToken && initialRefreshToken ? "confirming" : "idle"
-  );
+  const [confirmationStatus, setConfirmationStatus] = useState<
+    "idle" | "confirming" | "success" | "error"
+  >(initialAccessToken && initialRefreshToken ? "confirming" : "idle");
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(
     initialAccessToken && initialRefreshToken
       ? "Confirming your reset link..."
-      : "Open this link from the recovery email we sent you."
+      : "Open this link from the recovery email we sent you.",
   );
 
   const [newPassword, setNewPassword] = useState("");
@@ -72,7 +74,9 @@ export default function ResetPassword() {
   // ✅ Reset confirmation state (mirrors resetVerificationState)
   const resetConfirmationState = () => {
     setConfirmationStatus("idle");
-    setConfirmationMessage("Open this link from the recovery email we sent you.");
+    setConfirmationMessage(
+      "Open this link from the recovery email we sent you.",
+    );
     setConfirming(false);
   };
 
@@ -90,7 +94,9 @@ export default function ResetPassword() {
     const timeout = setTimeout(() => {
       if (hasProcessedRef.current) {
         setConfirmationStatus("error");
-        setConfirmationMessage("The reset link timed out. Please request a new one.");
+        setConfirmationMessage(
+          "The reset link timed out. Please request a new one.",
+        );
         setConfirming(false);
       }
     }, 8000);
@@ -106,13 +112,17 @@ export default function ResetPassword() {
       if (error) {
         console.error("Set session error", error);
         setConfirmationStatus("error");
-        setConfirmationMessage(error.message || "Unable to verify your reset token.");
+        setConfirmationMessage(
+          error.message || "Unable to verify your reset token.",
+        );
         return;
       }
 
       if (data.session) {
         setConfirmationStatus("success");
-        setConfirmationMessage("Your identity has been verified! Please set a new password.");
+        setConfirmationMessage(
+          "Your identity has been verified! Please set a new password.",
+        );
       } else {
         setConfirmationStatus("error");
         setConfirmationMessage("Invalid or expired reset link.");
@@ -142,7 +152,8 @@ export default function ResetPassword() {
       try {
         const initialUrl = await Linking.getInitialURL();
         if (initialUrl && initialUrl.includes("reset-password")) {
-          const { parsedAccessToken, parsedRefreshToken } = parseResetUrl(initialUrl);
+          const { parsedAccessToken, parsedRefreshToken } =
+            parseResetUrl(initialUrl);
           if (parsedAccessToken && parsedRefreshToken) {
             if (!cancelled) {
               await processTokens(parsedAccessToken, parsedRefreshToken);
@@ -176,7 +187,11 @@ export default function ResetPassword() {
     const subscription = Linking.addEventListener("url", async ({ url }) => {
       if (url.includes("reset-password")) {
         const { parsedAccessToken, parsedRefreshToken } = parseResetUrl(url);
-        if (parsedAccessToken && parsedRefreshToken && !hasProcessedRef.current) {
+        if (
+          parsedAccessToken &&
+          parsedRefreshToken &&
+          !hasProcessedRef.current
+        ) {
           await processTokens(parsedAccessToken, parsedRefreshToken);
         }
       }
@@ -206,20 +221,26 @@ export default function ResetPassword() {
 
     // ✅ Use confirmationStatus instead of sessionStatus
     if (confirmationStatus !== "success") {
-      setFormError("Use the secure link from your email to reset your password.");
+      setFormError(
+        "Use the secure link from your email to reset your password.",
+      );
       return;
     }
 
     try {
       setLoading(true);
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
 
       if (error) {
         setFormError(error.message);
         return;
       }
 
-      setSuccess("Password updated! You can now sign in with your new credentials.");
+      setSuccess(
+        "Password updated! You can now sign in with your new credentials.",
+      );
       setTimeout(() => router.replace("/(auth)/login"), 1500);
     } catch (err) {
       console.error("Reset password error", err);
@@ -232,9 +253,18 @@ export default function ResetPassword() {
   // ✅ Show full-screen loader during active confirmation (optional but consistent)
   if (confirming && confirmationStatus === "confirming") {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#030014" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#030014",
+        }}
+      >
         <ActivityIndicator size="large" color="#AB8BFF" />
-        <Text style={{ color: "#FFFFFF", marginTop: 16 }}>Confirming reset link...</Text>
+        <Text style={{ color: "#FFFFFF", marginTop: 16 }}>
+          Confirming reset link...
+        </Text>
       </View>
     );
   }
@@ -255,8 +285,8 @@ export default function ResetPassword() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView
               ref={scrollViewRef}
-              contentContainerStyle={{ 
-                flexGrow: 1, 
+              contentContainerStyle={{
+                flexGrow: 1,
                 paddingHorizontal: 24,
                 paddingTop: 20,
                 paddingBottom: 40,
@@ -284,8 +314,8 @@ export default function ResetPassword() {
                           confirmationStatus === "error"
                             ? "border-red-500/40 bg-red-500/10"
                             : confirmationStatus === "success"
-                            ? "border-green-500/40 bg-green-500/10"
-                            : "border-white/10 bg-white/5"
+                              ? "border-green-500/40 bg-green-500/10"
+                              : "border-white/10 bg-white/5"
                         }`}
                       >
                         <View className="flex-row items-center justify-between">
@@ -294,13 +324,15 @@ export default function ResetPassword() {
                               confirmationStatus === "error"
                                 ? "text-red-300"
                                 : confirmationStatus === "success"
-                                ? "text-green-300"
-                                : "text-light-200"
+                                  ? "text-green-300"
+                                  : "text-light-200"
                             }`}
                           >
                             {confirmationMessage}
                           </Text>
-                          {confirming && <ActivityIndicator size="small" color="#ffffff" />}
+                          {confirming && (
+                            <ActivityIndicator size="small" color="#ffffff" />
+                          )}
                         </View>
                       </View>
                     )}
@@ -336,12 +368,18 @@ export default function ResetPassword() {
                           onSubmitEditing={() => {
                             confirmPasswordRef.current?.focus();
                             setTimeout(() => {
-                              scrollViewRef.current?.scrollTo({ y: 200, animated: true });
+                              scrollViewRef.current?.scrollTo({
+                                y: 200,
+                                animated: true,
+                              });
                             }, 100);
                           }}
                           onFocus={() => {
                             setTimeout(() => {
-                              scrollViewRef.current?.scrollTo({ y: 150, animated: true });
+                              scrollViewRef.current?.scrollTo({
+                                y: 150,
+                                animated: true,
+                              });
                             }, 300);
                           }}
                           className="mt-1 text-base font-medium text-white"
@@ -354,7 +392,9 @@ export default function ResetPassword() {
                             Confirm password
                           </Text>
                           <TouchableOpacity
-                            onPress={() => setShowConfirmPassword((prev) => !prev)}
+                            onPress={() =>
+                              setShowConfirmPassword((prev) => !prev)
+                            }
                             hitSlop={12}
                           >
                             <Ionicons
@@ -378,7 +418,10 @@ export default function ResetPassword() {
                           onSubmitEditing={Keyboard.dismiss}
                           onFocus={() => {
                             setTimeout(() => {
-                              scrollViewRef.current?.scrollTo({ y: 200, animated: true });
+                              scrollViewRef.current?.scrollTo({
+                                y: 200,
+                                animated: true,
+                              });
                             }, 300);
                           }}
                           className="mt-1 text-base font-medium text-white"
@@ -388,13 +431,17 @@ export default function ResetPassword() {
 
                     {formError && (
                       <View className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 mb-5">
-                        <Text className="text-sm text-red-300">{formError}</Text>
+                        <Text className="text-sm text-red-300">
+                          {formError}
+                        </Text>
                       </View>
                     )}
 
                     {success && (
                       <View className="rounded-2xl border border-green-500/40 bg-green-500/10 p-4 mb-5">
-                        <Text className="text-sm text-green-300">{success}</Text>
+                        <Text className="text-sm text-green-300">
+                          {success}
+                        </Text>
                       </View>
                     )}
 
@@ -424,7 +471,9 @@ export default function ResetPassword() {
                 </View>
 
                 <View className="items-center">
-                  <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
+                  <TouchableOpacity
+                    onPress={() => router.replace("/(auth)/login")}
+                  >
                     <Text className="text-base font-semibold text-white">
                       Return to sign in
                     </Text>

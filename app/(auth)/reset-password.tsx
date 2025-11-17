@@ -45,15 +45,19 @@ console.log("🎯 Setting up module-level deep link listener...");
 const globalUrlListener = Linking.addEventListener("url", ({ url }) => {
   const timestamp = getUrlTimestamp(url);
   console.log(`🔥 Deep link received: t=${timestamp}`);
-  
+
   if (url.includes("reset-password")) {
     // Only accept if this URL is NEWER than what we have
     if (timestamp > globalMostRecentTimestamp) {
-      console.log(`✅ NEW URL accepted (${timestamp} > ${globalMostRecentTimestamp})`);
+      console.log(
+        `✅ NEW URL accepted (${timestamp} > ${globalMostRecentTimestamp})`,
+      );
       globalMostRecentUrl = url;
       globalMostRecentTimestamp = timestamp;
     } else {
-      console.log(`⏭️ OLD URL rejected (${timestamp} <= ${globalMostRecentTimestamp})`);
+      console.log(
+        `⏭️ OLD URL rejected (${timestamp} <= ${globalMostRecentTimestamp})`,
+      );
     }
   }
 });
@@ -69,12 +73,16 @@ export default function ResetPassword() {
   const newPasswordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   // Track if this instance has already initialized
   const hasInitialized = useRef(false);
 
-  const [sessionStatus, setSessionStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [sessionError, setSessionError] = useState<string | null>("Open this link from the recovery email we sent you.");
+  const [sessionStatus, setSessionStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [sessionError, setSessionError] = useState<string | null>(
+    "Open this link from the recovery email we sent you.",
+  );
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -87,58 +95,58 @@ export default function ResetPassword() {
   const parseResetUrl = (url: string) => {
     const timestamp = getUrlTimestamp(url);
     console.log(`📝 Parsing URL with timestamp: t=${timestamp}`);
-    
+
     try {
       const urlObj = new URL(url);
-      
+
       if (urlObj.hash) {
         const hashParams = new URLSearchParams(urlObj.hash.substring(1));
-        
+
         // Check for errors first
-        const error = hashParams.get('error');
-        const errorCode = hashParams.get('error_code');
-        const errorDescription = hashParams.get('error_description');
-        
+        const error = hashParams.get("error");
+        const errorCode = hashParams.get("error_code");
+        const errorDescription = hashParams.get("error_description");
+
         if (error) {
           console.log(`❌ Error in URL t=${timestamp}:`, { error, errorCode });
-          return { 
-            accessToken: null, 
+          return {
+            accessToken: null,
             refreshToken: null,
             error: errorDescription || "Reset link is invalid or has expired",
-            timestamp
+            timestamp,
           };
         }
-        
+
         // Check for tokens
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
-        
-        if (accessToken && refreshToken && type === 'recovery') {
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const type = hashParams.get("type");
+
+        if (accessToken && refreshToken && type === "recovery") {
           console.log(`✅ Valid tokens in URL t=${timestamp}`);
-          return { 
-            accessToken, 
-            refreshToken, 
+          return {
+            accessToken,
+            refreshToken,
             error: null,
-            timestamp
+            timestamp,
           };
         }
       }
-      
+
       console.log(`⚠️ No valid data in URL t=${timestamp}`);
-      return { 
-        accessToken: null, 
-        refreshToken: null, 
+      return {
+        accessToken: null,
+        refreshToken: null,
         error: "No valid reset link found",
-        timestamp
+        timestamp,
       };
     } catch (error) {
       console.error("💥 Error parsing URL:", error);
-      return { 
-        accessToken: null, 
-        refreshToken: null, 
+      return {
+        accessToken: null,
+        refreshToken: null,
         error: "Invalid URL format",
-        timestamp: 0
+        timestamp: 0,
       };
     }
   };
@@ -161,7 +169,9 @@ export default function ResetPassword() {
       if (error) {
         console.error("❌ Set session error:", error.message);
         setSessionStatus("error");
-        setSessionError("The reset link is invalid or expired. Please request a new one.");
+        setSessionError(
+          "The reset link is invalid or expired. Please request a new one.",
+        );
         return;
       }
 
@@ -190,7 +200,7 @@ export default function ResetPassword() {
 
   const processUrl = async (url: string, source: string) => {
     const urlTimestamp = getUrlTimestamp(url);
-    
+
     // Prevent duplicate processing
     if (globalIsProcessing) {
       console.log(`⏸️ Already processing, skipping t=${urlTimestamp}`);
@@ -209,12 +219,13 @@ export default function ResetPassword() {
     try {
       // Clear any existing session first
       await supabase.auth.signOut();
-      
+
       // Reset form state
       resetFormState();
-      
-      const { accessToken, refreshToken, error, timestamp } = parseResetUrl(url);
-      
+
+      const { accessToken, refreshToken, error, timestamp } =
+        parseResetUrl(url);
+
       if (error) {
         console.log(`❌ URL error at t=${timestamp}:`, error);
         setSessionStatus("error");
@@ -257,14 +268,17 @@ export default function ResetPassword() {
       if (params.access_token && params.refresh_token) {
         console.log("✅ Tokens found in route params");
         if (mounted) {
-          await processTokens(params.access_token as string, params.refresh_token as string);
+          await processTokens(
+            params.access_token as string,
+            params.refresh_token as string,
+          );
         }
         return;
       }
 
       // 2. Wait for deep link to be captured by global listener
       console.log("⏳ Waiting 500ms for deep links...");
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (!mounted) return;
 
@@ -280,30 +294,34 @@ export default function ResetPassword() {
       console.log("📱 Checking initial URL as fallback...");
       try {
         const initialUrl = await Linking.getInitialURL();
-        
+
         if (initialUrl && initialUrl.includes("reset-password")) {
           const timestamp = getUrlTimestamp(initialUrl);
           console.log(`📱 Using initial URL, t=${timestamp}`);
-          
+
           // Update global state if this is newer
           if (timestamp > globalMostRecentTimestamp) {
             globalMostRecentUrl = initialUrl;
             globalMostRecentTimestamp = timestamp;
           }
-          
+
           await processUrl(initialUrl, "cold-start");
         } else {
           console.log("ℹ️ No reset-password URL found");
           if (mounted) {
             setSessionStatus("idle");
-            setSessionError("Open this link from the recovery email we sent you.");
+            setSessionError(
+              "Open this link from the recovery email we sent you.",
+            );
           }
         }
       } catch (err) {
         console.warn("⚠️ Failed to get initial URL", err);
         if (mounted) {
           setSessionStatus("idle");
-          setSessionError("Open this link from the recovery email we sent you.");
+          setSessionError(
+            "Open this link from the recovery email we sent you.",
+          );
         }
       }
     };
@@ -317,21 +335,21 @@ export default function ResetPassword() {
 
   const handleManualRefresh = async () => {
     console.log("🔄 Manual refresh triggered");
-    
+
     if (globalMostRecentUrl) {
       const timestamp = getUrlTimestamp(globalMostRecentUrl);
       console.log(`📍 Using stored URL, t=${timestamp}`);
     }
-    
+
     // Clear the last processed URL to allow reprocessing
     globalLastProcessedUrl = null;
-    
+
     // Reset everything
     await supabase.auth.signOut();
     resetFormState();
     setSessionStatus("loading");
     setSessionError("Checking for reset link...");
-    
+
     // Use the global most recent URL
     if (globalMostRecentUrl && globalMostRecentUrl.includes("reset-password")) {
       console.log("✅ Reprocessing stored URL");
@@ -339,7 +357,9 @@ export default function ResetPassword() {
     } else {
       console.log("❌ No stored URL available");
       setSessionStatus("error");
-      setSessionError("No reset link found. Please open the link from your email.");
+      setSessionError(
+        "No reset link found. Please open the link from your email.",
+      );
     }
   };
 
@@ -369,9 +389,9 @@ export default function ResetPassword() {
 
     try {
       setLoading(true);
-      
-      const { error } = await supabase.auth.updateUser({ 
-        password: newPassword 
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
       });
 
       if (error) {
@@ -381,16 +401,18 @@ export default function ResetPassword() {
       }
 
       console.log("✅ Password updated successfully!");
-      setSuccess("Password updated! You can now sign in with your new credentials.");
-      
+      setSuccess(
+        "Password updated! You can now sign in with your new credentials.",
+      );
+
       // Clear stored URLs on success
       globalMostRecentUrl = null;
       globalMostRecentTimestamp = 0;
       globalLastProcessedUrl = null;
-      
+
       // Sign out and redirect to login
       await supabase.auth.signOut();
-      
+
       setTimeout(() => router.replace("/(auth)/login"), 2000);
     } catch (err) {
       console.error("💥 Reset password error", err);
@@ -416,8 +438,8 @@ export default function ResetPassword() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView
               ref={scrollViewRef}
-              contentContainerStyle={{ 
-                flexGrow: 1, 
+              contentContainerStyle={{
+                flexGrow: 1,
                 paddingHorizontal: 24,
                 paddingTop: 20,
                 paddingBottom: 40,
@@ -444,8 +466,8 @@ export default function ResetPassword() {
                           sessionStatus === "error"
                             ? "border-red-500/40 bg-red-500/10"
                             : sessionStatus === "loading"
-                            ? "border-white/10 bg-white/5"
-                            : "border-white/20 bg-white/5"
+                              ? "border-white/10 bg-white/5"
+                              : "border-white/20 bg-white/5"
                         }`}
                       >
                         <View className="flex-row items-center justify-between">
@@ -455,8 +477,8 @@ export default function ResetPassword() {
                                 sessionStatus === "error"
                                   ? "text-red-300"
                                   : sessionStatus === "loading"
-                                  ? "text-light-200"
-                                  : "text-light-200"
+                                    ? "text-light-200"
+                                    : "text-light-200"
                               }`}
                             >
                               {sessionError}
@@ -466,9 +488,9 @@ export default function ResetPassword() {
                             <ActivityIndicator size="small" color="#ffffff" />
                           )}
                         </View>
-                        
+
                         {sessionStatus === "error" && (
-                          <TouchableOpacity 
+                          <TouchableOpacity
                             onPress={handleManualRefresh}
                             className="mt-3 bg-white/10 rounded-lg py-2 px-3"
                           >
@@ -489,7 +511,9 @@ export default function ResetPassword() {
                                 New password
                               </Text>
                               <TouchableOpacity
-                                onPress={() => setShowNewPassword((prev) => !prev)}
+                                onPress={() =>
+                                  setShowNewPassword((prev) => !prev)
+                                }
                                 hitSlop={12}
                               >
                                 <Ionicons
@@ -513,12 +537,18 @@ export default function ResetPassword() {
                               onSubmitEditing={() => {
                                 confirmPasswordRef.current?.focus();
                                 setTimeout(() => {
-                                  scrollViewRef.current?.scrollTo({ y: 200, animated: true });
+                                  scrollViewRef.current?.scrollTo({
+                                    y: 200,
+                                    animated: true,
+                                  });
                                 }, 100);
                               }}
                               onFocus={() => {
                                 setTimeout(() => {
-                                  scrollViewRef.current?.scrollTo({ y: 150, animated: true });
+                                  scrollViewRef.current?.scrollTo({
+                                    y: 150,
+                                    animated: true,
+                                  });
                                 }, 300);
                               }}
                               className="mt-1 text-base font-medium text-white"
@@ -531,7 +561,9 @@ export default function ResetPassword() {
                                 Confirm password
                               </Text>
                               <TouchableOpacity
-                                onPress={() => setShowConfirmPassword((prev) => !prev)}
+                                onPress={() =>
+                                  setShowConfirmPassword((prev) => !prev)
+                                }
                                 hitSlop={12}
                               >
                                 <Ionicons
@@ -555,7 +587,10 @@ export default function ResetPassword() {
                               onSubmitEditing={Keyboard.dismiss}
                               onFocus={() => {
                                 setTimeout(() => {
-                                  scrollViewRef.current?.scrollTo({ y: 200, animated: true });
+                                  scrollViewRef.current?.scrollTo({
+                                    y: 200,
+                                    animated: true,
+                                  });
                                 }, 300);
                               }}
                               className="mt-1 text-base font-medium text-white"
@@ -565,13 +600,17 @@ export default function ResetPassword() {
 
                         {formError && (
                           <View className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 mb-5">
-                            <Text className="text-sm text-red-300">{formError}</Text>
+                            <Text className="text-sm text-red-300">
+                              {formError}
+                            </Text>
                           </View>
                         )}
 
                         {success && (
                           <View className="rounded-2xl border border-green-500/40 bg-green-500/10 p-4 mb-5">
-                            <Text className="text-sm text-green-300">{success}</Text>
+                            <Text className="text-sm text-green-300">
+                              {success}
+                            </Text>
                           </View>
                         )}
 
@@ -603,7 +642,9 @@ export default function ResetPassword() {
                 </View>
 
                 <View className="items-center">
-                  <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
+                  <TouchableOpacity
+                    onPress={() => router.replace("/(auth)/login")}
+                  >
                     <Text className="text-base font-semibold text-white">
                       Return to sign in
                     </Text>

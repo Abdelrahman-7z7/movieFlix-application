@@ -211,8 +211,8 @@ export default function Signup() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView
               ref={scrollViewRef}
-              contentContainerStyle={{ 
-                flexGrow: 1, 
+              contentContainerStyle={{
+                flexGrow: 1,
                 paddingHorizontal: 24,
                 paddingTop: 10,
                 paddingBottom: 20,
@@ -221,496 +221,462 @@ export default function Signup() {
               keyboardShouldPersistTaps="handled"
             >
               <View className="flex-1 py-4">
-            {/* Header */}
-            <View className="items-center mb-4" style={{ minHeight: 40 }}>
-              <Image 
-                source={icons.logo} 
-                style={{ width: 50, height: 40 }} 
-                resizeMode="contain"
-              />
-              <View
-                className="flex-row items-center mt-4 mb-3"
-                style={{ gap: 8 }}
-              >
-                <View
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor:
-                      step >= 1 ? "#AB8BFF" : "rgba(171, 139, 255, 0.3)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#FFFFFF",
-                      fontSize: 14,
-                      fontWeight: "600",
-                    }}
-                  >
-                    1
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    width: 40,
-                    height: 2,
-                    backgroundColor:
-                      step >= 2 ? "#AB8BFF" : "rgba(171, 139, 255, 0.3)",
-                  }}
-                />
-                <View
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor:
-                      step >= 2 ? "#AB8BFF" : "rgba(171, 139, 255, 0.3)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#FFFFFF",
-                      fontSize: 14,
-                      fontWeight: "600",
-                    }}
-                  >
-                    2
-                  </Text>
-                </View>
-              </View>
-              <Text className="text-xl font-bold text-white">
-                {step === 1 ? "Account Details" : "Personal Information"}
-              </Text>
-              <Text className="text-sm text-light-300 text-center mt-2">
-                {step === 1
-                  ? "Let's start with your account credentials"
-                  : "Tell us a bit about yourself"}
-              </Text>
-            </View>
-
-            {/* Form Content */}
-            <View className="mt-4">
-              {step === 1 ? (
-                <View>
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
-                    <Text className="text-xs uppercase tracking-widest text-light-200">
-                      Username
-                    </Text>
-                    <TextInput
-                      ref={usernameRef}
-                      value={username}
-                      onChangeText={(text) => {
-                        setUsername(text);
-                        setError(null);
-                      }}
-                      autoCapitalize="none"
-                      placeholder="johndoe"
-                      placeholderTextColor="#9CA4AB"
-                      returnKeyType="next"
-                      onSubmitEditing={() => emailRef.current?.focus()}
-                      className="mt-1 text-base font-medium text-white"
-                    />
-                    <Text className="mt-1 text-xs text-light-300">
-                      Letters, numbers, and underscores only
-                    </Text>
-                  </View>
-
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
-                    <Text className="text-xs uppercase tracking-widest text-light-200">
-                      Email
-                    </Text>
-                    <TextInput
-                      ref={emailRef}
-                      value={email}
-                      onChangeText={(text) => {
-                        setEmail(text);
-                        setError(null);
-                      }}
-                      autoCapitalize="none"
-                      keyboardType="email-address"
-                      placeholder="you@example.com"
-                      placeholderTextColor="#9CA4AB"
-                      returnKeyType="next"
-                      onSubmitEditing={() => passwordRef.current?.focus()}
-                      className="mt-1 text-base font-medium text-white"
-                    />
-                  </View>
-
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
-                    <View className="flex-row items-center justify-between">
-                      <Text className="text-xs uppercase tracking-widest text-light-200">
-                        Password
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setShowPassword((prev) => !prev)}
-                        hitSlop={12}
-                      >
-                        <Ionicons
-                          name={showPassword ? "eye" : "eye-off"}
-                          size={20}
-                          color="#9CA4AB"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    <TextInput
-                      ref={passwordRef}
-                      value={password}
-                      onChangeText={(text) => {
-                        setPassword(text);
-                        setError(null);
-                      }}
-                      secureTextEntry={!showPassword}
-                      placeholder="Create a strong password"
-                      placeholderTextColor="#9CA4AB"
-                      returnKeyType="next"
-                      onSubmitEditing={() => {
-                        confirmPasswordRef.current?.focus();
-                        // Scroll to show confirm password field, but keep logo visible
-                        setTimeout(() => {
-                          scrollViewRef.current?.scrollTo({ 
-                            y: 250, 
-                            animated: true 
-                          });
-                        }, 100);
-                      }}
-                      onFocus={() => {
-                        // Scroll to show password field when focused, but keep logo visible
-                        setTimeout(() => {
-                          scrollViewRef.current?.scrollTo({ 
-                            y: 200, 
-                            animated: true 
-                          });
-                        }, 300);
-                      }}
-                      className="mt-1 text-base font-medium text-white"
-                    />
-                    <Text className="mt-1 text-xs text-light-300">
-                      At least 8 characters
-                    </Text>
-                  </View>
-
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-3">
-                    <View className="flex-row items-center justify-between">
-                      <Text className="text-xs uppercase tracking-widest text-light-200">
-                        Confirm Password
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setShowConfirmPassword((prev) => !prev)}
-                        hitSlop={12}
-                      >
-                        <Ionicons
-                          name={showConfirmPassword ? "eye" : "eye-off"}
-                          size={20}
-                          color="#9CA4AB"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    <TextInput
-                      ref={confirmPasswordRef}
-                      value={confirmPassword}
-                      onChangeText={(text) => {
-                        setConfirmPassword(text);
-                        setError(null);
-                      }}
-                      secureTextEntry={!showConfirmPassword}
-                      placeholder="Confirm your password"
-                      placeholderTextColor="#9CA4AB"
-                      returnKeyType="done"
-                      onSubmitEditing={Keyboard.dismiss}
-                      onFocus={() => {
-                        // Scroll to show confirm password field when focused, but keep logo visible
-                        setTimeout(() => {
-                          scrollViewRef.current?.scrollTo({ 
-                            y: 250, 
-                            animated: true 
-                          });
-                        }, 300);
-                      }}
-                      className="mt-1 text-base font-medium text-white"
-                    />
-                    <Text className="mt-1 text-xs text-light-300">
-                      Re-enter your password
-                    </Text>
-                  </View>
-                </View>
-              ) : (
-                <View>
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
-                    <Text className="text-xs uppercase tracking-widest text-light-200">
-                      Full Name
-                    </Text>
-                    <TextInput
-                      ref={fullNameRef}
-                      value={fullName}
-                      onChangeText={(text) => {
-                        setFullName(text);
-                        setError(null);
-                      }}
-                      placeholder="John Doe"
-                      placeholderTextColor="#9CA4AB"
-                      returnKeyType="next"
-                      onSubmitEditing={() => phoneRef.current?.focus()}
-                      className="mt-1 text-base font-medium text-white"
-                    />
-                    <Text className="mt-1 text-xs text-light-300">
-                      Minimum 3 characters
-                    </Text>
-                  </View>
-
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
-                    <Text className="text-xs uppercase tracking-widest text-light-200">
-                      Phone Number
-                    </Text>
-                    <TextInput
-                      ref={phoneRef}
-                      value={phone}
-                      onChangeText={(text) => {
-                        setPhone(text);
-                        setError(null);
-                      }}
-                      keyboardType="phone-pad"
-                      placeholder="+1234567890"
-                      placeholderTextColor="#9CA4AB"
-                      returnKeyType="done"
-                      onSubmitEditing={Keyboard.dismiss}
-                      className="mt-1 text-base font-medium text-white"
-                    />
-                    <Text className="mt-1 text-xs text-light-300">
-                      10-15 digits, optional + prefix
-                    </Text>
-                  </View>
-
-                  {/* Birth Date picker */}
-                  <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-3">
-                    <Text className="text-xs uppercase tracking-widest text-light-200">
-                      Birth Date (Optional)
-                    </Text>
-
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        if (birthDate) {
-                          setTempDate(new Date(birthDate));
-                        } else {
-                          setTempDate(new Date(2000, 0, 1));
-                        }
-                        setShowDatePicker(true);
-                      }}
-                      style={{
-                        paddingVertical: 12,
-                        paddingHorizontal: 4,
-                        borderRadius: 8,
-                        backgroundColor: "rgba(255,255,255,0.05)",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#FFFFFF",
-                          fontSize: 16,
-                          fontWeight: "500",
-                        }}
-                      >
-                        {birthDate ? birthDate : "Select your birth date"}
-                      </Text>
-                    </TouchableOpacity>
-
-                    {Platform.OS === "ios" ? (
-                      <Modal
-                        visible={showDatePicker}
-                        transparent={true}
-                        animationType="slide"
-                        onRequestClose={() => setShowDatePicker(false)}
-                      >
-                        <View
-                          style={{
-                            flex: 1,
-                            backgroundColor: "rgba(0,0,0,0.5)",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          <View
-                            style={{
-                              backgroundColor: "#221F3D",
-                              borderTopLeftRadius: 20,
-                              borderTopRightRadius: 20,
-                              paddingTop: 20,
-                              paddingBottom: 40,
-                            }}
-                          >
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                paddingHorizontal: 20,
-                                paddingBottom: 15,
-                                borderBottomWidth: 1,
-                                borderBottomColor: "rgba(255,255,255,0.1)",
-                              }}
-                            >
-                              <TouchableOpacity
-                                onPress={() => setShowDatePicker(false)}
-                                style={{ padding: 8 }}
-                              >
-                                <Text
-                                  style={{ color: "#9CA4AB", fontSize: 16 }}
-                                >
-                                  Cancel
-                                </Text>
-                              </TouchableOpacity>
-                              <Text
-                                style={{
-                                  color: "#FFFFFF",
-                                  fontSize: 18,
-                                  fontWeight: "600",
-                                }}
-                              >
-                                Select Date
-                              </Text>
-                              <TouchableOpacity
-                                onPress={() => {
-                                  const formatted = tempDate
-                                    .toISOString()
-                                    .split("T")[0];
-                                  setBirthDate(formatted);
-                                  setShowDatePicker(false);
-                                }}
-                                style={{ padding: 8 }}
-                              >
-                                <Text
-                                  style={{
-                                    color: "#AB8BFF",
-                                    fontSize: 16,
-                                    fontWeight: "600",
-                                  }}
-                                >
-                                  Done
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                            <View
-                              style={{
-                                paddingHorizontal: 2,
-                                alignItems: "center",
-                              }}
-                            >
-                              <DateTimePicker
-                                mode="date"
-                                display="spinner"
-                                value={tempDate}
-                                onChange={(event, selectedDate) => {
-                                  if (selectedDate) {
-                                    setTempDate(selectedDate);
-                                  }
-                                }}
-                                maximumDate={new Date()}
-                                textColor="#FFFFFF"
-                                themeVariant="dark"
-                                style={{ alignSelf: "center" }}
-                              />
-                            </View>
-                          </View>
-                        </View>
-                      </Modal>
-                    ) : (
-                      showDatePicker && (
-                        <DateTimePicker
-                          mode="date"
-                          display="default"
-                          value={
-                            birthDate
-                              ? new Date(birthDate)
-                              : new Date(2000, 0, 1)
-                          }
-                          onChange={(event, selectedDate) => {
-                            setShowDatePicker(false);
-                            if (event.type === "set" && selectedDate) {
-                              const formatted = selectedDate
-                                .toISOString()
-                                .split("T")[0];
-                              setBirthDate(formatted);
-                            }
-                          }}
-                          maximumDate={new Date()}
-                          textColor="#FFFFFF"
-                          themeVariant="dark"
-                        />
-                      )
-                    )}
-
-                    <Text className="mt-1 text-xs text-light-300">
-                      Tap to choose a date
-                    </Text>
-                  </View>
-                </View>
-              )}
-
-              {error && (
-                <View className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 mt-4">
-                  <Text className="text-sm text-red-300">{error}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Action Buttons */}
-            <View style={{ gap: 10, marginTop: 16 }}>
-              {step === 1 ? (
-                <TouchableOpacity activeOpacity={0.85} onPress={handleNext}>
-                  <LinearGradient
-                    colors={["#AB8BFF", "#6A4CFF"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{ borderRadius: 16, padding: 2 }}
+                {/* Header */}
+                <View className="items-center mb-4" style={{ minHeight: 40 }}>
+                  <Image
+                    source={icons.logo}
+                    style={{ width: 50, height: 40 }}
+                    resizeMode="contain"
+                  />
+                  <View
+                    className="flex-row items-center mt-4 mb-3"
+                    style={{ gap: 8 }}
                   >
                     <View
                       style={{
-                        backgroundColor: "#151312",
-                        borderRadius: 14,
-                        paddingVertical: 16,
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor:
+                          step >= 1 ? "#AB8BFF" : "rgba(171, 139, 255, 0.3)",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       <Text
                         style={{
                           color: "#FFFFFF",
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: "600",
                         }}
                       >
-                        Continue
+                        1
                       </Text>
                     </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ) : (
-                <>
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    disabled={loading}
-                    onPress={handleSignup}
-                  >
-                    <LinearGradient
-                      colors={["#AB8BFF", "#6A4CFF"]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={{ borderRadius: 16, padding: 2 }}
+                    <View
+                      style={{
+                        width: 40,
+                        height: 2,
+                        backgroundColor:
+                          step >= 2 ? "#AB8BFF" : "rgba(171, 139, 255, 0.3)",
+                      }}
+                    />
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor:
+                          step >= 2 ? "#AB8BFF" : "rgba(171, 139, 255, 0.3)",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      <View
+                      <Text
                         style={{
-                          backgroundColor: "#151312",
-                          borderRadius: 14,
-                          paddingVertical: 16,
-                          alignItems: "center",
+                          color: "#FFFFFF",
+                          fontSize: 14,
+                          fontWeight: "600",
                         }}
                       >
-                        {loading ? (
-                          <ActivityIndicator color="#ffffff" />
+                        2
+                      </Text>
+                    </View>
+                  </View>
+                  <Text className="text-xl font-bold text-white">
+                    {step === 1 ? "Account Details" : "Personal Information"}
+                  </Text>
+                  <Text className="text-sm text-light-300 text-center mt-2">
+                    {step === 1
+                      ? "Let's start with your account credentials"
+                      : "Tell us a bit about yourself"}
+                  </Text>
+                </View>
+
+                {/* Form Content */}
+                <View className="mt-4">
+                  {step === 1 ? (
+                    <View>
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
+                        <Text className="text-xs uppercase tracking-widest text-light-200">
+                          Username
+                        </Text>
+                        <TextInput
+                          ref={usernameRef}
+                          value={username}
+                          onChangeText={(text) => {
+                            setUsername(text);
+                            setError(null);
+                          }}
+                          autoCapitalize="none"
+                          placeholder="johndoe"
+                          placeholderTextColor="#9CA4AB"
+                          returnKeyType="next"
+                          onSubmitEditing={() => emailRef.current?.focus()}
+                          className="mt-1 text-base font-medium text-white"
+                        />
+                        <Text className="mt-1 text-xs text-light-300">
+                          Letters, numbers, and underscores only
+                        </Text>
+                      </View>
+
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
+                        <Text className="text-xs uppercase tracking-widest text-light-200">
+                          Email
+                        </Text>
+                        <TextInput
+                          ref={emailRef}
+                          value={email}
+                          onChangeText={(text) => {
+                            setEmail(text);
+                            setError(null);
+                          }}
+                          autoCapitalize="none"
+                          keyboardType="email-address"
+                          placeholder="you@example.com"
+                          placeholderTextColor="#9CA4AB"
+                          returnKeyType="next"
+                          onSubmitEditing={() => passwordRef.current?.focus()}
+                          className="mt-1 text-base font-medium text-white"
+                        />
+                      </View>
+
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
+                        <View className="flex-row items-center justify-between">
+                          <Text className="text-xs uppercase tracking-widest text-light-200">
+                            Password
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => setShowPassword((prev) => !prev)}
+                            hitSlop={12}
+                          >
+                            <Ionicons
+                              name={showPassword ? "eye" : "eye-off"}
+                              size={20}
+                              color="#9CA4AB"
+                            />
+                          </TouchableOpacity>
+                        </View>
+                        <TextInput
+                          ref={passwordRef}
+                          value={password}
+                          onChangeText={(text) => {
+                            setPassword(text);
+                            setError(null);
+                          }}
+                          secureTextEntry={!showPassword}
+                          placeholder="Create a strong password"
+                          placeholderTextColor="#9CA4AB"
+                          returnKeyType="next"
+                          onSubmitEditing={() => {
+                            confirmPasswordRef.current?.focus();
+                            // Scroll to show confirm password field, but keep logo visible
+                            setTimeout(() => {
+                              scrollViewRef.current?.scrollTo({
+                                y: 250,
+                                animated: true,
+                              });
+                            }, 100);
+                          }}
+                          onFocus={() => {
+                            // Scroll to show password field when focused, but keep logo visible
+                            setTimeout(() => {
+                              scrollViewRef.current?.scrollTo({
+                                y: 200,
+                                animated: true,
+                              });
+                            }, 300);
+                          }}
+                          className="mt-1 text-base font-medium text-white"
+                        />
+                        <Text className="mt-1 text-xs text-light-300">
+                          At least 8 characters
+                        </Text>
+                      </View>
+
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-3">
+                        <View className="flex-row items-center justify-between">
+                          <Text className="text-xs uppercase tracking-widest text-light-200">
+                            Confirm Password
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() =>
+                              setShowConfirmPassword((prev) => !prev)
+                            }
+                            hitSlop={12}
+                          >
+                            <Ionicons
+                              name={showConfirmPassword ? "eye" : "eye-off"}
+                              size={20}
+                              color="#9CA4AB"
+                            />
+                          </TouchableOpacity>
+                        </View>
+                        <TextInput
+                          ref={confirmPasswordRef}
+                          value={confirmPassword}
+                          onChangeText={(text) => {
+                            setConfirmPassword(text);
+                            setError(null);
+                          }}
+                          secureTextEntry={!showConfirmPassword}
+                          placeholder="Confirm your password"
+                          placeholderTextColor="#9CA4AB"
+                          returnKeyType="done"
+                          onSubmitEditing={Keyboard.dismiss}
+                          onFocus={() => {
+                            // Scroll to show confirm password field when focused, but keep logo visible
+                            setTimeout(() => {
+                              scrollViewRef.current?.scrollTo({
+                                y: 250,
+                                animated: true,
+                              });
+                            }, 300);
+                          }}
+                          className="mt-1 text-base font-medium text-white"
+                        />
+                        <Text className="mt-1 text-xs text-light-300">
+                          Re-enter your password
+                        </Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <View>
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
+                        <Text className="text-xs uppercase tracking-widest text-light-200">
+                          Full Name
+                        </Text>
+                        <TextInput
+                          ref={fullNameRef}
+                          value={fullName}
+                          onChangeText={(text) => {
+                            setFullName(text);
+                            setError(null);
+                          }}
+                          placeholder="John Doe"
+                          placeholderTextColor="#9CA4AB"
+                          returnKeyType="next"
+                          onSubmitEditing={() => phoneRef.current?.focus()}
+                          className="mt-1 text-base font-medium text-white"
+                        />
+                        <Text className="mt-1 text-xs text-light-300">
+                          Minimum 3 characters
+                        </Text>
+                      </View>
+
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-2">
+                        <Text className="text-xs uppercase tracking-widest text-light-200">
+                          Phone Number
+                        </Text>
+                        <TextInput
+                          ref={phoneRef}
+                          value={phone}
+                          onChangeText={(text) => {
+                            setPhone(text);
+                            setError(null);
+                          }}
+                          keyboardType="phone-pad"
+                          placeholder="+1234567890"
+                          placeholderTextColor="#9CA4AB"
+                          returnKeyType="done"
+                          onSubmitEditing={Keyboard.dismiss}
+                          className="mt-1 text-base font-medium text-white"
+                        />
+                        <Text className="mt-1 text-xs text-light-300">
+                          10-15 digits, optional + prefix
+                        </Text>
+                      </View>
+
+                      {/* Birth Date picker */}
+                      <View className="rounded-3xl border border-white/10 bg-white/5 p-4 mb-3">
+                        <Text className="text-xs uppercase tracking-widest text-light-200">
+                          Birth Date (Optional)
+                        </Text>
+
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            if (birthDate) {
+                              setTempDate(new Date(birthDate));
+                            } else {
+                              setTempDate(new Date(2000, 0, 1));
+                            }
+                            setShowDatePicker(true);
+                          }}
+                          style={{
+                            paddingVertical: 12,
+                            paddingHorizontal: 4,
+                            borderRadius: 8,
+                            backgroundColor: "rgba(255,255,255,0.05)",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "#FFFFFF",
+                              fontSize: 16,
+                              fontWeight: "500",
+                            }}
+                          >
+                            {birthDate ? birthDate : "Select your birth date"}
+                          </Text>
+                        </TouchableOpacity>
+
+                        {Platform.OS === "ios" ? (
+                          <Modal
+                            visible={showDatePicker}
+                            transparent={true}
+                            animationType="slide"
+                            onRequestClose={() => setShowDatePicker(false)}
+                          >
+                            <View
+                              style={{
+                                flex: 1,
+                                backgroundColor: "rgba(0,0,0,0.5)",
+                                justifyContent: "flex-end",
+                              }}
+                            >
+                              <View
+                                style={{
+                                  backgroundColor: "#221F3D",
+                                  borderTopLeftRadius: 20,
+                                  borderTopRightRadius: 20,
+                                  paddingTop: 20,
+                                  paddingBottom: 40,
+                                }}
+                              >
+                                <View
+                                  style={{
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    paddingHorizontal: 20,
+                                    paddingBottom: 15,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: "rgba(255,255,255,0.1)",
+                                  }}
+                                >
+                                  <TouchableOpacity
+                                    onPress={() => setShowDatePicker(false)}
+                                    style={{ padding: 8 }}
+                                  >
+                                    <Text
+                                      style={{ color: "#9CA4AB", fontSize: 16 }}
+                                    >
+                                      Cancel
+                                    </Text>
+                                  </TouchableOpacity>
+                                  <Text
+                                    style={{
+                                      color: "#FFFFFF",
+                                      fontSize: 18,
+                                      fontWeight: "600",
+                                    }}
+                                  >
+                                    Select Date
+                                  </Text>
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      const formatted = tempDate
+                                        .toISOString()
+                                        .split("T")[0];
+                                      setBirthDate(formatted);
+                                      setShowDatePicker(false);
+                                    }}
+                                    style={{ padding: 8 }}
+                                  >
+                                    <Text
+                                      style={{
+                                        color: "#AB8BFF",
+                                        fontSize: 16,
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      Done
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                                <View
+                                  style={{
+                                    paddingHorizontal: 2,
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <DateTimePicker
+                                    mode="date"
+                                    display="spinner"
+                                    value={tempDate}
+                                    onChange={(event, selectedDate) => {
+                                      if (selectedDate) {
+                                        setTempDate(selectedDate);
+                                      }
+                                    }}
+                                    maximumDate={new Date()}
+                                    textColor="#FFFFFF"
+                                    themeVariant="dark"
+                                    style={{ alignSelf: "center" }}
+                                  />
+                                </View>
+                              </View>
+                            </View>
+                          </Modal>
                         ) : (
+                          showDatePicker && (
+                            <DateTimePicker
+                              mode="date"
+                              display="default"
+                              value={
+                                birthDate
+                                  ? new Date(birthDate)
+                                  : new Date(2000, 0, 1)
+                              }
+                              onChange={(event, selectedDate) => {
+                                setShowDatePicker(false);
+                                if (event.type === "set" && selectedDate) {
+                                  const formatted = selectedDate
+                                    .toISOString()
+                                    .split("T")[0];
+                                  setBirthDate(formatted);
+                                }
+                              }}
+                              maximumDate={new Date()}
+                              textColor="#FFFFFF"
+                              themeVariant="dark"
+                            />
+                          )
+                        )}
+
+                        <Text className="mt-1 text-xs text-light-300">
+                          Tap to choose a date
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {error && (
+                    <View className="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 mt-4">
+                      <Text className="text-sm text-red-300">{error}</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Action Buttons */}
+                <View style={{ gap: 10, marginTop: 16 }}>
+                  {step === 1 ? (
+                    <TouchableOpacity activeOpacity={0.85} onPress={handleNext}>
+                      <LinearGradient
+                        colors={["#AB8BFF", "#6A4CFF"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{ borderRadius: 16, padding: 2 }}
+                      >
+                        <View
+                          style={{
+                            backgroundColor: "#151312",
+                            borderRadius: 14,
+                            paddingVertical: 16,
+                            alignItems: "center",
+                          }}
+                        >
                           <Text
                             style={{
                               color: "#FFFFFF",
@@ -718,51 +684,87 @@ export default function Signup() {
                               fontWeight: "600",
                             }}
                           >
-                            Create Account
+                            Continue
                           </Text>
-                        )}
-                      </View>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    onPress={handleBack}
-                    style={{
-                      borderWidth: 2,
-                      borderColor: "#AB8BFF",
-                      borderRadius: 16,
-                      paddingVertical: 16,
-                      alignItems: "center",
-                      backgroundColor: "rgba(171, 139, 255, 0.05)",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#AB8BFF",
-                        fontSize: 16,
-                        fontWeight: "600",
-                      }}
-                    >
-                      Back
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
+                        </View>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        disabled={loading}
+                        onPress={handleSignup}
+                      >
+                        <LinearGradient
+                          colors={["#AB8BFF", "#6A4CFF"]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={{ borderRadius: 16, padding: 2 }}
+                        >
+                          <View
+                            style={{
+                              backgroundColor: "#151312",
+                              borderRadius: 14,
+                              paddingVertical: 16,
+                              alignItems: "center",
+                            }}
+                          >
+                            {loading ? (
+                              <ActivityIndicator color="#ffffff" />
+                            ) : (
+                              <Text
+                                style={{
+                                  color: "#FFFFFF",
+                                  fontSize: 16,
+                                  fontWeight: "600",
+                                }}
+                              >
+                                Create Account
+                              </Text>
+                            )}
+                          </View>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={handleBack}
+                        style={{
+                          borderWidth: 2,
+                          borderColor: "#AB8BFF",
+                          borderRadius: 16,
+                          paddingVertical: 16,
+                          alignItems: "center",
+                          backgroundColor: "rgba(171, 139, 255, 0.05)",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "#AB8BFF",
+                            fontSize: 16,
+                            fontWeight: "600",
+                          }}
+                        >
+                          Back
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
 
-              <View className="items-center mt-4">
-                <Text className="text-sm text-light-300">
-                  Already a member?
-                </Text>
-                <TouchableOpacity
-                  className="mt-2"
-                  onPress={() => router.push("/(auth)/login")}
-                >
-                  <Text className="text-base font-semibold text-white">
-                    Sign in here
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                  <View className="items-center mt-4">
+                    <Text className="text-sm text-light-300">
+                      Already a member?
+                    </Text>
+                    <TouchableOpacity
+                      className="mt-2"
+                      onPress={() => router.push("/(auth)/login")}
+                    >
+                      <Text className="text-base font-semibold text-white">
+                        Sign in here
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             </ScrollView>
           </TouchableWithoutFeedback>
