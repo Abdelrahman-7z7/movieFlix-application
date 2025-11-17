@@ -23,42 +23,45 @@ export default function ForgotPassword() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleResetLink = async () => {
-    setMessage(null);
-    setError(null);
+  // In forgot-password.tsx
+const handleResetLink = async () => {
+  setMessage(null);
+  setError(null);
 
-    if (!email.trim()) {
-      setError("Enter the email associated with your account.");
+  if (!email.trim()) {
+    setError("Enter the email associated with your account.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // Add a timestamp to make each URL unique and prevent caching
+    const timestamp = Date.now();
+    const uniqueRedirectTo = __DEV__ 
+      ? `exp://127.0.0.1:8081/--/reset-password?t=${timestamp}`
+      : `myapp://reset-password?t=${timestamp}`;
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      {
+        redirectTo: uniqueRedirectTo,
+      },
+    );
+
+    if (resetError) {
+      setError(resetError.message);
       return;
     }
 
-    try {
-      setLoading(true);
-
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
-        {
-          redirectTo: __DEV__ 
-            ? "exp://127.0.0.1:8081/--/(auth)/reset-password"
-            : "myapp://(auth)/reset-password",
-        },
-      );
-
-      if (resetError) {
-        setError(resetError.message);
-        return;
-      }
-
-      setMessage(
-        "We sent a secure link to your email. Follow it to set a new password.",
-      );
-    } catch (err) {
-      console.error("Forgot password error", err);
-      setError("Could not send reset email. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setMessage("We sent a secure link to your email. Follow it to set a new password.");
+  } catch (err) {
+    console.error("Forgot password error", err);
+    setError("Could not send reset email. Please try again later.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <View className="flex-1 bg-primary">
