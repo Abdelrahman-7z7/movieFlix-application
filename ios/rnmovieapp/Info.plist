@@ -28,7 +28,6 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>myapp</string>
-          <string>com.rnmovieapp.dev</string>
         </array>
       </dict>
     </array>

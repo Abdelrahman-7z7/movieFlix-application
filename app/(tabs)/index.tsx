@@ -11,7 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import useFetch from "@/services/usefetch";
 import { fetchMovies } from "@/services/api";
-import { getTrendingMovies } from "@/services/appwrite";
+import { getTrendingMovies } from "@/services/supabaseAPI";
 
 import { icons } from "@/constants/icons";
 

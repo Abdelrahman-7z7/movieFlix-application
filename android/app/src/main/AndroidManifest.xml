@@ -26,9 +26,11 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
       </intent-filter>
-      <intent-filter data-generated="true">
+      <intent-filter android:autoVerify="true" data-generated="true">
         <action android:name="android.intent.action.VIEW"/>
         <data android:scheme="myapp" android:host="verify-email"/>
+        <data android:scheme="myapp" android:host="reset-password"/>
+        <data android:scheme="exp" android:host="127.0.0.1"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
