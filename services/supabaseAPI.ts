@@ -101,7 +101,7 @@ export const createCollection = async (name: string) => {
 // ✅ REMOVED userId parameter
 export const addMovieToCollection = async (
   collectionId: string,
-  movie: Movie,
+  movie: MovieDetails,
 ) => {
   try {
     const userId = await getAuthenticatedUserId();
@@ -156,22 +156,23 @@ export const addMovieToCollection = async (
   }
 };
 
-export const deleteCollection = async (collectionId: string) => {
+export const updateCollection = async (collectionId: string, name: string) => {
   try {
-    console.log(collectionId);
-    console.log(typeof collectionId);
-
-    const { data, error: errorr1 } = await supabase
+    const { error } = await supabase
       .from("Collections")
-      .select("*")
+      .update({ name })
       .eq("id", collectionId);
 
-    console.log(data);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error("Error updating collection:", err);
+    return false;
+  }
+};
 
-    if (errorr1) {
-      console.log(errorr1);
-    }
-
+export const deleteCollection = async (collectionId: string) => {
+  try {
     // ✅ RLS will ensure only owner can delete
     const { error } = await supabase
       .from("Collections")
@@ -269,20 +270,209 @@ export const getCollectionMovies = async (collectionId: string) => {
 };
 
 // ✅ REMOVED userId parameter
+// Check if movie is saved (either in SavedMovies OR in any collection)
 export const isMovieSaved = async (movieId: number) => {
   try {
     const userId = await getAuthenticatedUserId();
 
-    const { data } = await supabase
+    // Check if in SavedMovies
+    const { data: savedMovie } = await supabase
       .from("SavedMovies")
       .select("id")
       .eq("movie_id", movieId)
       .eq("user_id", userId)
       .single();
 
-    return !!data;
+    if (!savedMovie) return false;
+
+    // If in SavedMovies, it's considered saved (even if not in collections)
+    return true;
   } catch (err) {
     console.error("Error checking if movie is saved:", err);
+    return false;
+  }
+};
+
+// Check if movie is ONLY in SavedMovies (not in any collections)
+export const isMovieOnlyInSavedMovies = async (
+  movieId: number,
+): Promise<boolean> => {
+  try {
+    const userId = await getAuthenticatedUserId();
+
+    // Get the saved movie record
+    const { data: savedMovie } = await supabase
+      .from("SavedMovies")
+      .select("id")
+      .eq("movie_id", movieId)
+      .eq("user_id", userId)
+      .single();
+
+    if (!savedMovie) return false;
+
+    // Check if it's in any collections
+    const { data: collectionItems, error } = await supabase
+      .from("CollectionItems")
+      .select("id")
+      .eq("saved_movie_id", savedMovie.id)
+      .limit(1);
+
+    if (error) throw error;
+
+    // If no collection items, it's ONLY in SavedMovies
+    return !(collectionItems && collectionItems.length > 0);
+  } catch (err) {
+    console.error("Error checking if movie is only in SavedMovies:", err);
+    return false;
+  }
+};
+
+// Get all collection IDs that contain this movie
+export const getMovieCollectionIds = async (
+  movieId: number,
+): Promise<string[]> => {
+  try {
+    const userId = await getAuthenticatedUserId();
+
+    // Get the saved movie record
+    const { data: savedMovie } = await supabase
+      .from("SavedMovies")
+      .select("id")
+      .eq("movie_id", movieId)
+      .eq("user_id", userId)
+      .single();
+
+    if (!savedMovie) return [];
+
+    // Get all collection items for this movie
+    const { data: collectionItems, error } = await supabase
+      .from("CollectionItems")
+      .select("collection_id")
+      .eq("saved_movie_id", savedMovie.id);
+
+    if (error) throw error;
+
+    return (collectionItems || []).map((item: any) => item.collection_id);
+  } catch (err) {
+    console.error("Error getting movie collection IDs:", err);
+    return [];
+  }
+};
+
+// services/supabaseAPI.ts - ADDITIONAL FUNCTION
+export const removeMovieFromAllCollections = async (movieId: number) => {
+  try {
+    const userId = await getAuthenticatedUserId();
+
+    // First, get the saved_movie_id from SavedMovies
+    const { data: savedMovie } = await supabase
+      .from("SavedMovies")
+      .select("id")
+      .eq("movie_id", movieId)
+      .eq("user_id", userId)
+      .single();
+
+    if (!savedMovie) {
+      console.log("Movie not found in SavedMovies");
+      return true; // Already not saved
+    }
+
+    // Delete from CollectionItems first (due to foreign key constraints)
+    const { error: collectionItemsError } = await supabase
+      .from("CollectionItems")
+      .delete()
+      .eq("saved_movie_id", savedMovie.id);
+
+    if (collectionItemsError) {
+      console.error("Error removing from collections:", collectionItemsError);
+      throw collectionItemsError;
+    }
+
+    // Then delete from SavedMovies
+    const { error: savedMoviesError } = await supabase
+      .from("SavedMovies")
+      .delete()
+      .eq("id", savedMovie.id);
+
+    if (savedMoviesError) {
+      console.error("Error removing from saved movies:", savedMoviesError);
+      throw savedMoviesError;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Error completely removing movie:", err);
+    return false;
+  }
+};
+
+/**
+ * Checks if movie is in any specific collections (not just saved)
+ */
+export const isMovieInAnyCollection = async (
+  movieId: number,
+): Promise<boolean> => {
+  try {
+    const userId = await getAuthenticatedUserId();
+
+    // Get the saved movie record
+    const { data: savedMovie } = await supabase
+      .from("SavedMovies")
+      .select("id")
+      .eq("movie_id", movieId)
+      .eq("user_id", userId)
+      .single();
+
+    if (!savedMovie) return false;
+
+    // Check if it's in any collections
+    const { data: collectionItems, error } = await supabase
+      .from("CollectionItems")
+      .select("id")
+      .eq("saved_movie_id", savedMovie.id)
+      .limit(1);
+
+    if (error) throw error;
+    return !!(collectionItems && collectionItems.length > 0);
+  } catch (err) {
+    console.error("Error checking collection status:", err);
+    return false;
+  }
+};
+
+// Add this function to services/supabaseAPI.ts
+export const saveMovieWithoutCollections = async (movie: MovieDetails) => {
+  try {
+    const userId = await getAuthenticatedUserId();
+
+    // Check if movie is already saved
+    const { data: existingSaved } = await supabase
+      .from("SavedMovies")
+      .select("id")
+      .eq("movie_id", movie.id)
+      .eq("user_id", userId)
+      .single();
+
+    if (existingSaved) {
+      return true; // Already saved
+    }
+
+    // Save to SavedMovies only
+    const { data: saved, error } = await supabase
+      .from("SavedMovies")
+      .insert({
+        movie_id: movie.id,
+        title: movie.title,
+        poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        user_id: userId,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error("Error saving movie without collections:", err);
     return false;
   }
 };
