@@ -1,10 +1,19 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import useFetch from "@/services/usefetch";
 import { fetchMovieDetails } from "@/services/api";
 import { router, useLocalSearchParams } from "expo-router";
-import { icons } from "@/constants/icons";
 import RefreshableScroll from "@/components/RefreshableScroll";
+import SaveButton from "@/components/saveButton";
+import CollectionsPopup from "@/components/CollectionsPopup";
+import { isMovieSaved } from "@/services/supabaseAPI";
 
 interface MovieInfoProps {
   label: string;
@@ -23,7 +32,6 @@ const MovieInfo = ({ label, value }: MovieInfoProps) => {
 };
 
 const MovieDetails = () => {
-  // using localSearchParam which will be attached by the index.page throwing it into the url /:id
   const { id } = useLocalSearchParams();
 
   const {
@@ -34,28 +42,74 @@ const MovieDetails = () => {
   } = useFetch(() => fetchMovieDetails(id as string));
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [showCollectionsPopup, setShowCollectionsPopup] = useState(false);
+
+  // Check if movie is saved on component mount and after refetch
+  useEffect(() => {
+    if (movie?.id) {
+      checkMovieStatus();
+    }
+  }, [movie?.id]);
+
+  const checkMovieStatus = async () => {
+    if (!movie?.id) return;
+
+    setCheckingStatus(true);
+    try {
+      const savedStatus = await isMovieSaved(movie.id);
+      setIsSaved(savedStatus);
+    } catch (error) {
+      console.error("Error checking movie status:", error);
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     try {
-      // artificial delay for testing the refresh spinner
-      await new Promise((resolve) => setTimeout(resolve, 1200));
       await refetch();
+      await checkMovieStatus(); // Recheck saved status after refresh
     } finally {
       setRefreshing(false);
     }
   }, [refetch]);
 
+  const handleSavePress = () => {
+    if (!movie) return;
+
+    // Open collections popup
+    setShowCollectionsPopup(true);
+  };
+
+  const handlePopupClose = () => {
+    setShowCollectionsPopup(false);
+    // Recheck if movie is still saved after popup closes
+    checkMovieStatus();
+  };
+
+  // Show initial loading
+  if (loading && !movie) {
+    return (
+      <View className="bg-primary flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#fff" />
+        <Text className="text-white mt-4">Loading movie...</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="bg-primary flex-1">
-      {/* since the height of the details might be bigger than the screen than we have to have a scrolling flexibility around */}
-
       <RefreshableScroll
         contentContainerStyle={{
           paddingBottom: 80,
         }}
+        refreshing={refreshing || checkingStatus}
         onRefresh={onRefresh}
       >
-        <View>
+        <View className="relative">
           {movie?.poster_path ? (
             <Image
               source={{
@@ -70,6 +124,20 @@ const MovieDetails = () => {
               resizeMode="stretch"
             />
           )}
+
+          {/* Save Button - Positioned on top right of poster */}
+          <View
+            className="absolute top-5 right-5 z-10"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
+            <SaveButton isSaved={isSaved} onPress={handleSavePress} />
+          </View>
         </View>
 
         <View className="flex-col item-start justify-center mt-5 px-5">
@@ -83,7 +151,7 @@ const MovieDetails = () => {
           </View>
 
           <View className="flex-row item-center self-start bg-dark-100 px-2 py-1 mt-2 gap-x-1 rounded-md">
-            <Image source={icons.star} className="size-4" />
+            <Ionicons name="star" size={16} color="#FFD700" />
             <Text className="text-white font-bold text-sm">
               {Math.round(movie?.vote_average ?? 0)}/10
             </Text>
@@ -127,19 +195,27 @@ const MovieDetails = () => {
         </View>
       </RefreshableScroll>
 
-      {/* creating a button with touchable opacity to control the back route to the previous view */}
-
+      {/* Go Back Button */}
       <TouchableOpacity
         className="absolute bottom-5 left-0 right-0 mx-5 bg-accent rounded-lg py-3.5 flex flex-row items-center justify-center z-50"
         onPress={router.back}
       >
-        <Image
-          source={icons.arrow}
-          className="mr-1 mt-0.5 rotate-180"
-          tintColor="#fff"
-        />
-        <Text className="text-white font-semibold text-base">Go Back</Text>
+        <Ionicons name="arrow-back" size={20} color="#fff" />
+        <Text className="text-white font-semibold text-base ml-2">Go Back</Text>
       </TouchableOpacity>
+
+      {/* Collections Popup */}
+      {movie && (
+        <CollectionsPopup
+          visible={showCollectionsPopup}
+          onClose={handlePopupClose}
+          movie={{
+            id: movie.id,
+            title: movie.title,
+            poster_path: movie.poster_path,
+          }}
+        />
+      )}
     </View>
   );
 };
