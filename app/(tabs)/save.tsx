@@ -8,6 +8,7 @@ import {
   Alert,
   RefreshControl,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,19 +20,15 @@ import {
   getUserCollections,
   getSavedMovies,
   createCollection,
+  getCollectionMovies,
+  deleteCollection,
+  updateCollection,
 } from "@/services/supabaseAPI";
+import SaveCard from "@/components/SaveCard";
 
 const Save = () => {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-
-  const [activeCollection, setActiveCollection] = useState<{
-    id: string;
-    name: string;
-    cover_url: string | null;
-    is_default: boolean;
-    movies: any[];
-  } | null>(null);
 
   const [collections, setCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +52,20 @@ const Save = () => {
           getSavedMovies(),
         ]);
 
+        // ✅ Load movies for each collection
+        const collectionsWithMovies = await Promise.all(
+          (Array.isArray(rawCollections) ? rawCollections : []).map(
+            async (col: any) => {
+              const movies = await getCollectionMovies(col.id);
+              return {
+                ...col,
+                movies: movies || [],
+                is_default: false,
+              };
+            },
+          ),
+        );
+
         const combinedCollections = [
           {
             id: "all",
@@ -63,20 +74,10 @@ const Save = () => {
             is_default: true,
             movies: Array.isArray(allSavedMovies) ? allSavedMovies : [],
           },
-          ...(Array.isArray(rawCollections) ? rawCollections : []).map(
-            (col: any) => ({
-              ...col,
-              movies: [],
-              is_default: false,
-            }),
-          ),
+          ...collectionsWithMovies,
         ];
 
         setCollections(combinedCollections);
-
-        if (!activeCollection && combinedCollections.length > 0) {
-          setActiveCollection(combinedCollections[0]);
-        }
       } catch (err: any) {
         console.error("Failed to fetch data:", err);
         setError(err.message || "Failed to load data");
@@ -85,14 +86,14 @@ const Save = () => {
         if (showLoading) setRefreshing(false);
       }
     },
-    [isAuthenticated, activeCollection],
+    [isAuthenticated],
   );
 
   useEffect(() => {
     if (!authLoading) {
       fetchData();
     }
-  }, [authLoading, isAuthenticated, fetchData]);
+  }, [authLoading, isAuthenticated]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -108,12 +109,7 @@ const Save = () => {
         try {
           const newCol = await createCollection(name.trim());
           if (newCol) {
-            fetchData();
-            setActiveCollection({
-              ...newCol,
-              movies: [],
-              is_default: false,
-            });
+            await fetchData();
           }
         } catch (err) {
           console.error("Failed to create collection:", err);
@@ -127,61 +123,56 @@ const Save = () => {
     );
   };
 
-  const renderCollectionItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      onPress={() => setActiveCollection(item)}
-      className={`flex-row items-center py-3 px-4 rounded-xl mb-2 ${
-        activeCollection?.id === item.id
-          ? "bg-white/10 border border-accent"
-          : "bg-white/5"
-      }`}
-    >
-      {item.id === "all" ? (
-        <View className="w-10 h-10 rounded-lg bg-accent/20 items-center justify-center mr-3">
-          <Ionicons name="bookmark" size={18} color="#AB8BFF" />
-        </View>
-      ) : (
-        <View className="w-10 h-10 rounded-lg overflow-hidden mr-3 bg-dark-100">
-          {item.cover_url ? (
-            <View className="w-full h-full bg-gray-700 items-center justify-center">
-              <Ionicons name="image" size={18} color="#6A4CFF" />
-            </View>
-          ) : (
-            <View className="w-full h-full bg-gray-800 items-center justify-center">
-              <Ionicons name="film-outline" size={18} color="#6A4CFF" />
-            </View>
-          )}
-        </View>
-      )}
-      <View className="flex-1">
-        <Text className="text-white font-medium">{item.name}</Text>
-        <Text className="text-light-300 text-xs">
-          {item.movies?.length || 0} movies
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const handleDeleteCollection = async (collectionId: string, name: string) => {
+    Alert.alert(
+      "Delete Collection",
+      `Are you sure you want to delete "${name}"? Movies will remain saved.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const success = await deleteCollection(collectionId);
+            if (success) {
+              await fetchData();
+            } else {
+              Alert.alert("Error", "Could not delete collection.");
+            }
+          },
+        },
+      ],
+    );
+  };
 
-  const renderMovie = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      onPress={() => router.push(`/movie/${item.movie_id}`)}
-      className="w-1/2 px-1.5 pb-4"
-    >
-      <View className="rounded-xl overflow-hidden bg-dark-100">
-        {item.poster_url ? (
-          <View className="w-full aspect-[2/3] bg-gray-700 items-center justify-center">
-            <Ionicons name="image" size={20} color="#6A4CFF" />
-          </View>
-        ) : (
-          <View className="w-full aspect-[2/3] bg-gray-800 items-center justify-center">
-            <Ionicons name="film-outline" size={20} color="#6A4CFF" />
-          </View>
-        )}
-        <Text className="text-white text-xs p-1.5 line-clamp-1">
-          {item.title}
-        </Text>
-      </View>
-    </TouchableOpacity>
+  const handleRenameCollection = async (
+    collectionId: string,
+    newName: string,
+  ) => {
+    try {
+      const success = await updateCollection(collectionId, newName);
+      if (success) {
+        await fetchData();
+      } else {
+        Alert.alert("Error", "Could not rename collection. Please try again.");
+      }
+    } catch (err) {
+      console.error("Failed to rename collection:", err);
+      Alert.alert("Error", "Could not rename collection. Please try again.");
+    }
+  };
+
+  const renderCollectionCard = ({ item }: { item: any }) => (
+    <SaveCard
+      id={item.id}
+      name={item.name}
+      cover_url={item.cover_url}
+      movieCount={item.movies?.length || 0}
+      movies={item.movies || []}
+      isDefault={item.is_default}
+      onDelete={item.is_default ? undefined : handleDeleteCollection}
+      onRename={item.is_default ? undefined : handleRenameCollection}
+    />
   );
 
   if (authLoading) {
@@ -199,7 +190,7 @@ const Save = () => {
           end={{ x: 1, y: 1 }}
         />
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#AB8BFF" />
         </View>
       </View>
     );
@@ -244,37 +235,64 @@ const Save = () => {
       />
 
       <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
-        <View className="flex-1 p-4 relative z-10">
-          {/* Header */}
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-white text-xl font-bold">Your Library</Text>
+        <View className="flex-1 relative z-10">
+          {/* Header with Privacy Text and New Collection Button */}
+          <View className="flex-row justify-between items-center px-5 pt-4 pb-3">
+            <Text className="text-light-300 text-sm flex-1">
+              Only you can see what you've saved
+            </Text>
             <TouchableOpacity
               onPress={handleCreateCollection}
-              className="bg-accent/20 p-2 rounded-full"
+              className="bg-accent/20 px-4 py-2 rounded-full flex-row items-center"
             >
-              <Ionicons name="add" size={24} color="#AB8BFF" />
+              <Ionicons name="add" size={18} color="#AB8BFF" />
+              <Text className="text-accent font-semibold ml-1 text-sm">
+                New Collection
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Main Content with Pull-to-Refresh */}
-          <View className="flex-1">
+          {/* Collections Grid */}
+          <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#AB8BFF"
+                colors={["#AB8BFF"]}
+              />
+            }
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingBottom: 100,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
             {loading ? (
-              <View className="flex-1 items-center justify-center">
-                <ActivityIndicator size="large" color="#0000ff" />
+              <View className="flex-1 items-center justify-center py-20">
+                <ActivityIndicator size="large" color="#AB8BFF" />
               </View>
             ) : error ? (
-              <View className="flex-1 items-center justify-center">
-                <Text className="text-red-500">{error}</Text>
-                <TouchableOpacity onPress={onRefresh} className="mt-2">
-                  <Text className="text-accent">Retry</Text>
+              <View className="flex-1 items-center justify-center py-20">
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={48}
+                  color="#ff4d4d"
+                />
+                <Text className="text-red-500 mt-4 text-center">{error}</Text>
+                <TouchableOpacity
+                  onPress={onRefresh}
+                  className="bg-accent px-5 py-3 rounded-full mt-4"
+                >
+                  <Text className="text-white font-semibold">Retry</Text>
                 </TouchableOpacity>
               </View>
             ) : collections.length === 1 &&
               collections[0].id === "all" &&
               collections[0].movies.length === 0 ? (
-              <View className="flex-1 items-center justify-center px-10">
+              <View className="flex-1 items-center justify-center py-20 px-10">
                 <Ionicons name="bookmark-outline" size={64} color="#6A4CFF" />
-                <Text className="text-white text-lg font-bold text-center mb-2">
+                <Text className="text-white text-lg font-bold text-center mb-2 mt-4">
                   Save Your First Movie
                 </Text>
                 <Text className="text-light-300 text-center mb-6">
@@ -291,83 +309,19 @@ const Save = () => {
                 </TouchableOpacity>
               </View>
             ) : (
-              <View className="flex-1 flex-row">
-                {/* Collections Sidebar */}
-                <View className="w-1/3 pr-2">
-                  <FlatList
-                    data={collections}
-                    renderItem={renderCollectionItem}
-                    keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                  />
-                </View>
-
-                {/* Movies Grid */}
-                <View className="w-2/3 pl-2">
-                  <View className="flex-row justify-between items-center mb-3">
-                    <Text className="text-white font-semibold">
-                      {activeCollection?.name}
-                    </Text>
-                    {activeCollection && !activeCollection.is_default && (
-                      <TouchableOpacity
-                        onPress={() => {
-                          Alert.alert(
-                            "Delete Collection",
-                            `Are you sure you want to delete "${activeCollection.name}"? Movies will remain saved.`,
-                            [
-                              { text: "Cancel", style: "cancel" },
-                              {
-                                text: "Delete",
-                                style: "destructive",
-                                onPress: () => {
-                                  console.log("Delete", activeCollection.id);
-                                },
-                              },
-                            ],
-                          );
-                        }}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={20}
-                          color="#ff4d4d"
-                        />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  {activeCollection?.movies &&
-                  activeCollection.movies.length > 0 ? (
-                    <FlatList
-                      data={activeCollection.movies}
-                      renderItem={renderMovie}
-                      keyExtractor={(item) => item.id}
-                      numColumns={2}
-                      showsVerticalScrollIndicator={false}
-                      columnWrapperStyle={{ justifyContent: "space-between" }}
-                      contentContainerStyle={{ paddingBottom: 100 }}
-                      refreshControl={
-                        <RefreshControl
-                          refreshing={refreshing}
-                          onRefresh={onRefresh}
-                          tintColor="#0000ff" // Match Search page blue
-                          colors={["#0000ff"]}
-                        />
-                      }
-                    />
-                  ) : (
-                    <View className="flex-1 items-center justify-center">
-                      <Ionicons name="film-outline" size={48} color="#444" />
-                      <Text className="text-light-300 mt-3">
-                        No movies in this collection
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
+              <FlatList
+                data={collections}
+                renderItem={renderCollectionCard}
+                keyExtractor={(item) => item.id}
+                numColumns={2}
+                columnWrapperStyle={{
+                  justifyContent: "space-between",
+                }}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+              />
             )}
-          </View>
+          </ScrollView>
         </View>
       </SafeAreaView>
     </View>
