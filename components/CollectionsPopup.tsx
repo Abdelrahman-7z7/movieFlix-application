@@ -167,59 +167,58 @@ const CollectionsPopup = ({
     }
   };
 
-  const handleCompleteRemoval = async () => {
-    // Prevent deletion if movie is ONLY in SavedMovies
-    if (isOnlyInSavedMovies) {
+  const handleSaveToggle = async () => {
+    if (isMovieCurrentlySaved) {
+      // Movie is saved - remove it completely
       Alert.alert(
-        "Cannot Remove",
-        "This movie is saved without collections. You cannot remove it completely. Please add it to at least one collection first.",
-      );
-      return;
-    }
-
-    Alert.alert(
-      "Remove from All Collections",
-      "Are you sure you want to remove this movie from all collections? The movie will remain in your saved movies.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: async () => {
-            setSaving(true);
-            try {
-              // Remove from all collections but keep in SavedMovies
-              for (const collectionId of selectedCollections) {
-                const movies = await getCollectionMovies(collectionId);
-                const movieInCollection = movies.find(
-                  (m: any) => m.movie_id === movie.id,
-                );
-
-                if (movieInCollection) {
-                  await removeMovieFromCollection(
-                    collectionId,
-                    movieInCollection.id,
-                  );
-                }
-              }
-
-              setSelectedCollections(new Set());
-              setIsOnlyInSavedMovies(true);
-              setIsMovieCurrentlySaved(true);
-              onClose();
-            } catch (error) {
-              console.error("Error removing movie:", error);
-              Alert.alert("Error", "Could not remove movie from collections.");
-            } finally {
-              setSaving(false);
-            }
+        "Remove Movie",
+        "Are you sure you want to remove this movie from all collections and saved movies?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
           },
-        },
-      ],
-    );
+          {
+            text: "Remove",
+            style: "destructive",
+            onPress: async () => {
+              setSaving(true);
+              try {
+                const success = await removeMovieFromAllCollections(movie.id);
+                if (success) {
+                  setIsMovieCurrentlySaved(false);
+                  setIsOnlyInSavedMovies(false);
+                  setSelectedCollections(new Set());
+                  setInitialSelectedCollections(new Set());
+                  onClose();
+                } else {
+                  Alert.alert("Error", "Could not remove movie.");
+                }
+              } catch (error) {
+                console.error("Error removing movie:", error);
+                Alert.alert("Error", "Could not remove movie.");
+              } finally {
+                setSaving(false);
+              }
+            },
+          },
+        ],
+      );
+    } else {
+      // Movie is not saved - save it without collections
+      setSaving(true);
+      try {
+        await saveMovieWithoutCollections(movie as any);
+        setIsMovieCurrentlySaved(true);
+        setIsOnlyInSavedMovies(true);
+        onClose();
+      } catch (error) {
+        console.error("Error saving movie:", error);
+        Alert.alert("Error", "Could not save movie. Please try again.");
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -440,25 +439,47 @@ const CollectionsPopup = ({
                     {movie.title}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  onPress={onClose}
-                  className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
-                >
-                  <Ionicons name="close" size={24} color="#fff" />
-                </TouchableOpacity>
-              </View>
 
-              {/* Status Badge */}
-              {isMovieCurrentlySaved && (
-                <View className="flex-row items-center bg-accent/20 px-3 py-2 rounded-full self-start">
-                  <Ionicons name="checkmark-circle" size={16} color="#AB8BFF" />
-                  <Text className="text-accent font-semibold text-xs ml-2">
-                    {isOnlyInSavedMovies
-                      ? "Saved (No Collections)"
-                      : `${selectedCollections.size} Collection${selectedCollections.size !== 1 ? "s" : ""}`}
-                  </Text>
+                {/* Action Buttons */}
+                <View className="flex-row items-center gap-2">
+                  {/* Save/Unsave Button */}
+                  <TouchableOpacity
+                    onPress={handleSaveToggle}
+                    disabled={saving}
+                    className={`w-10 h-10 rounded-full items-center justify-center ${
+                      isMovieCurrentlySaved ? "bg-accent/20" : "bg-white/10"
+                    }`}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name={
+                        isMovieCurrentlySaved ? "bookmark" : "bookmark-outline"
+                      }
+                      size={22}
+                      color={isMovieCurrentlySaved ? "#AB8BFF" : "#fff"}
+                    />
+                  </TouchableOpacity>
+
+                  {/* New Collection Button */}
+                  <TouchableOpacity
+                    onPress={() => setShowNewCollection(true)}
+                    disabled={saving}
+                    className="w-10 h-10 rounded-full bg-accent/20 items-center justify-center"
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="add" size={24} color="#AB8BFF" />
+                  </TouchableOpacity>
+
+                  {/* Close Button */}
+                  <TouchableOpacity
+                    onPress={onClose}
+                    className="w-10 h-10 rounded-full bg-white/10 items-center justify-center"
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="close" size={24} color="#fff" />
+                  </TouchableOpacity>
                 </View>
-              )}
+              </View>
             </View>
 
             {/* Content - Scrollable */}
@@ -490,35 +511,9 @@ const CollectionsPopup = ({
                       No Collections Yet
                     </Text>
                     <Text className="text-light-300 text-center text-sm px-4 leading-5">
-                      Create your first collection to organize your saved
-                      movies, or save this movie without collections.
+                      Tap the + button in the header to create your first
+                      collection and organize your saved movies.
                     </Text>
-                  </View>
-
-                  {/* Action Buttons */}
-                  <View style={{ gap: 12 }}>
-                    <TouchableOpacity
-                      onPress={() => setShowNewCollection(true)}
-                      className="bg-accent rounded-2xl px-6 py-4 flex-row items-center justify-center"
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="add-circle" size={22} color="#fff" />
-                      <Text className="text-white font-bold text-base ml-2">
-                        Create Collection
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={handleSaveWithoutCollection}
-                      disabled={saving}
-                      className="bg-dark-200 rounded-2xl px-6 py-4 flex-row items-center justify-center border border-dark-300"
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="bookmark" size={22} color="#fff" />
-                      <Text className="text-white font-semibold text-base ml-2">
-                        {saving ? "Saving..." : "Save Without Collection"}
-                      </Text>
-                    </TouchableOpacity>
                   </View>
                 </View>
               ) : (
@@ -595,119 +590,36 @@ const CollectionsPopup = ({
                       </View>
                     </View>
                   )}
-
-                  {/* Add New Collection Button */}
-                  {!showNewCollection && collections.length > 0 && (
-                    <TouchableOpacity
-                      onPress={() => setShowNewCollection(true)}
-                      className="flex-row items-center justify-center py-4 mb-4 border-2 border-dashed border-accent/50 rounded-2xl bg-accent/5"
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="add-circle-outline"
-                        size={24}
-                        color="#AB8BFF"
-                      />
-                      <Text className="text-accent font-semibold ml-2 text-base">
-                        New Collection
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Save Without Collection Option */}
-                  {!showNewCollection && collections.length > 0 && (
-                    <TouchableOpacity
-                      onPress={handleSaveWithoutCollection}
-                      disabled={saving}
-                      className="flex-row items-center justify-center py-4 mb-4 border border-light-300/30 rounded-2xl bg-dark-200/50"
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="bookmark-outline"
-                        size={20}
-                        color="#fff"
-                      />
-                      <Text className="text-white font-medium ml-2 text-sm">
-                        {saving ? "Saving..." : "Save Without Collections"}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Warning for Only in SavedMovies */}
-                  {isOnlyInSavedMovies && !showNewCollection && (
-                    <View className="mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-2xl p-4 flex-row items-start">
-                      <Ionicons
-                        name="information-circle"
-                        size={20}
-                        color="#FBBF24"
-                      />
-                      <Text className="text-yellow-400 text-xs ml-2 flex-1 leading-4">
-                        This movie is saved without collections. Add it to at
-                        least one collection to enable removal.
-                      </Text>
-                    </View>
-                  )}
                 </>
               )}
             </ScrollView>
 
             {/* Footer Actions - Fixed at bottom */}
-            {!loading && !showNewCollection && (
+            {!loading && !showNewCollection && hasChanges() && (
               <View className="px-6 pt-4 pb-6 border-t border-dark-200 bg-transparent">
-                {hasChanges() ? (
-                  <TouchableOpacity
-                    onPress={handleSave}
-                    disabled={saving}
-                    className="bg-accent rounded-2xl py-4 flex-row items-center justify-center"
-                    activeOpacity={0.8}
-                  >
-                    {saving ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <>
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color="#fff"
-                        />
-                        <Text className="text-white font-bold text-base ml-2">
-                          {isMovieCurrentlySaved
-                            ? "Update Collections"
-                            : "Save to Collections"}
-                        </Text>
-                      </>
-                    )}
-                  </TouchableOpacity>
-                ) : isMovieCurrentlySaved && !isOnlyInSavedMovies ? (
-                  <TouchableOpacity
-                    onPress={handleCompleteRemoval}
-                    disabled={saving}
-                    className="bg-red-500/20 border border-red-500/50 rounded-2xl py-4 flex-row items-center justify-center"
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="trash-outline" size={20} color="#ef4444" />
-                    <Text className="text-red-400 font-semibold ml-2 text-base">
-                      Remove from All Collections
-                    </Text>
-                  </TouchableOpacity>
-                ) : isMovieCurrentlySaved &&
-                  isOnlyInSavedMovies &&
-                  collections.length > 0 ? (
-                  <TouchableOpacity
-                    onPress={() => {}}
-                    disabled={true}
-                    className="bg-gray-600/50 rounded-2xl py-4 flex-row items-center justify-center opacity-50"
-                  >
-                    <Ionicons
-                      name="information-circle"
-                      size={20}
-                      color="#9CA4AB"
-                    />
-                    <Text className="text-light-300 font-medium ml-2 text-sm">
-                      Select collections to organize this movie
-                    </Text>
-                  </TouchableOpacity>
-                ) : null}
+                <TouchableOpacity
+                  onPress={handleSave}
+                  disabled={saving}
+                  className="bg-accent rounded-2xl py-4 flex-row items-center justify-center"
+                  activeOpacity={0.8}
+                >
+                  {saving ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color="#fff"
+                      />
+                      <Text className="text-white font-bold text-base ml-2">
+                        {isMovieCurrentlySaved
+                          ? "Update Collections"
+                          : "Save to Collections"}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
               </View>
             )}
           </LinearGradient>
