@@ -19,6 +19,7 @@ import {
   getUserCollections,
 } from "@/services/supabaseAPI";
 import MovieCard from "@/components/MovieCard";
+import RefreshableWrapper from "@/components/RefreshableWrapper";
 
 const SavedMovieCollection = () => {
   const router = useRouter();
@@ -98,7 +99,7 @@ const SavedMovieCollection = () => {
       setError(err.message || "Failed to load movies");
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      // Don't set refreshing to false here, let onRefresh handle it
     }
   }, [id, isAuthenticated]);
 
@@ -108,10 +109,16 @@ const SavedMovieCollection = () => {
     }
   }, [authLoading, fetchMovies]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchMovies();
-  };
+    try {
+      await fetchMovies();
+    } finally {
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 100);
+    }
+  }, [fetchMovies]);
 
   if (authLoading || loading) {
     return (
@@ -173,71 +180,82 @@ const SavedMovieCollection = () => {
       />
 
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <View className="flex-1 relative z-10">
-          {/* Header */}
-          <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="bg-white/10 p-2 rounded-full"
-            >
-              <Ionicons name="arrow-back" size={24} color="#AB8BFF" />
-            </TouchableOpacity>
-            <Text className="text-white text-xl font-bold flex-1 text-center mr-10">
-              {collectionName}
-            </Text>
-          </View>
-
-          {/* Movies Grid */}
-          {error ? (
-            <View className="flex-1 items-center justify-center px-10">
-              <Ionicons name="alert-circle-outline" size={48} color="#ff4d4d" />
-              <Text className="text-red-500 mt-4 text-center">{error}</Text>
+        <RefreshableWrapper
+          refreshing={refreshing}
+          loading={loading}
+          indicatorColor="#AB8BFF"
+        >
+          <View className="flex-1 relative z-10">
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
               <TouchableOpacity
-                onPress={fetchMovies}
-                className="bg-accent px-5 py-3 rounded-full mt-4"
+                onPress={() => router.back()}
+                className="bg-white/10 p-2 rounded-full"
               >
-                <Text className="text-white font-semibold">Retry</Text>
+                <Ionicons name="arrow-back" size={24} color="#AB8BFF" />
               </TouchableOpacity>
-            </View>
-          ) : movies.length === 0 ? (
-            <View className="flex-1 items-center justify-center px-10">
-              <Ionicons name="film-outline" size={64} color="#6A4CFF" />
-              <Text className="text-white text-lg font-bold text-center mb-2 mt-4">
-                No Movies Yet
-              </Text>
-              <Text className="text-light-300 text-center">
-                This collection is empty. Start saving movies to see them here.
+              <Text className="text-white text-xl font-bold flex-1 text-center mr-10">
+                {collectionName}
               </Text>
             </View>
-          ) : (
-            <FlatList
-              data={movies}
-              renderItem={({ item }) => <MovieCard {...item} />}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={3}
-              columnWrapperStyle={{
-                justifyContent: "flex-start",
-                gap: 20,
-                paddingHorizontal: 20,
-                marginBottom: 10,
-              }}
-              contentContainerStyle={{
-                paddingTop: 10,
-                paddingBottom: 100,
-              }}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor="#AB8BFF"
-                  colors={["#AB8BFF"]}
+
+            {/* Movies Grid */}
+            {error ? (
+              <View className="flex-1 items-center justify-center px-10">
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={48}
+                  color="#ff4d4d"
                 />
-              }
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={true}
-            />
-          )}
-        </View>
+                <Text className="text-red-500 mt-4 text-center">{error}</Text>
+                <TouchableOpacity
+                  onPress={fetchMovies}
+                  className="bg-accent px-5 py-3 rounded-full mt-4"
+                >
+                  <Text className="text-white font-semibold">Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : movies.length === 0 ? (
+              <View className="flex-1 items-center justify-center px-10">
+                <Ionicons name="film-outline" size={64} color="#6A4CFF" />
+                <Text className="text-white text-lg font-bold text-center mb-2 mt-4">
+                  No Movies Yet
+                </Text>
+                <Text className="text-light-300 text-center">
+                  This collection is empty. Start saving movies to see them
+                  here.
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={movies}
+                renderItem={({ item }) => <MovieCard {...item} />}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={3}
+                columnWrapperStyle={{
+                  justifyContent: "flex-start",
+                  gap: 20,
+                  paddingHorizontal: 20,
+                  marginBottom: 10,
+                }}
+                contentContainerStyle={{
+                  paddingTop: 10,
+                  paddingBottom: 100,
+                }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="transparent"
+                    colors={["transparent"]}
+                  />
+                }
+                showsVerticalScrollIndicator={false}
+                scrollEnabled={true}
+              />
+            )}
+          </View>
+        </RefreshableWrapper>
       </SafeAreaView>
     </View>
   );

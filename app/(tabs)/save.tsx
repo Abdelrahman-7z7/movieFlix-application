@@ -6,9 +6,8 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
-  RefreshControl,
   ActivityIndicator,
-  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -25,6 +24,7 @@ import {
   updateCollection,
 } from "@/services/supabaseAPI";
 import SaveCard from "@/components/SaveCard";
+import RefreshableWrapper from "@/components/RefreshableWrapper";
 
 const Save = () => {
   const router = useRouter();
@@ -95,10 +95,17 @@ const Save = () => {
     }
   }, [authLoading, isAuthenticated]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    fetchData(false);
-  };
+    try {
+      await fetchData(false);
+    } finally {
+      // Small delay for smooth animation
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 100);
+    }
+  }, [fetchData]);
 
   const handleCreateCollection = () => {
     Alert.prompt(
@@ -235,44 +242,30 @@ const Save = () => {
       />
 
       <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
-        <View className="flex-1 relative z-10">
-          {/* Header with Privacy Text and New Collection Button */}
-          <View className="flex-row justify-between items-center px-5 pt-4 pb-3">
-            <Text className="text-light-300 text-sm flex-1">
-              Only you can see what you've saved
-            </Text>
-            <TouchableOpacity
-              onPress={handleCreateCollection}
-              className="bg-accent/20 px-4 py-2 rounded-full flex-row items-center"
-            >
-              <Ionicons name="add" size={18} color="#AB8BFF" />
-              <Text className="text-accent font-semibold ml-1 text-sm">
-                New Collection
+        <RefreshableWrapper
+          refreshing={refreshing}
+          loading={loading}
+          indicatorColor="#AB8BFF"
+        >
+          <View className="flex-1 relative z-10">
+            {/* Header with Privacy Text and New Collection Button */}
+            <View className="flex-row justify-between items-center px-5 pt-4 pb-3">
+              <Text className="text-light-300 text-sm flex-1">
+                Only you can see what you've saved
               </Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity
+                onPress={handleCreateCollection}
+                className="bg-accent/20 px-4 py-2 rounded-full flex-row items-center"
+              >
+                <Ionicons name="add" size={18} color="#AB8BFF" />
+                <Text className="text-accent font-semibold ml-1 text-sm">
+                  New Collection
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-          {/* Collections Grid */}
-          <ScrollView
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor="#AB8BFF"
-                colors={["#AB8BFF"]}
-              />
-            }
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-              paddingBottom: 100,
-            }}
-            showsVerticalScrollIndicator={false}
-          >
-            {loading ? (
-              <View className="flex-1 items-center justify-center py-20">
-                <ActivityIndicator size="large" color="#AB8BFF" />
-              </View>
-            ) : error ? (
+            {/* Collections Grid */}
+            {error ? (
               <View className="flex-1 items-center justify-center py-20">
                 <Ionicons
                   name="alert-circle-outline"
@@ -316,13 +309,26 @@ const Save = () => {
                 numColumns={2}
                 columnWrapperStyle={{
                   justifyContent: "space-between",
+                  paddingHorizontal: 20,
                 }}
-                scrollEnabled={false}
+                contentContainerStyle={{
+                  paddingTop: 10,
+                  paddingBottom: 100,
+                }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="transparent"
+                    colors={["transparent"]}
+                  />
+                }
                 showsVerticalScrollIndicator={false}
+                scrollEnabled={true}
               />
             )}
-          </ScrollView>
-        </View>
+          </View>
+        </RefreshableWrapper>
       </SafeAreaView>
     </View>
   );
