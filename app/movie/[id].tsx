@@ -11,6 +11,7 @@ import useFetch from "@/services/usefetch";
 import { fetchMovieDetails } from "@/services/api";
 import { router, useLocalSearchParams } from "expo-router";
 import RefreshableScroll from "@/components/RefreshableScroll";
+import RefreshableWrapper from "@/components/RefreshableWrapper";
 import SaveButton from "@/components/saveButton";
 import CollectionsPopup from "@/components/CollectionsPopup";
 import { isMovieSaved } from "@/services/supabaseAPI";
@@ -73,7 +74,9 @@ const MovieDetails = () => {
       await refetch();
       await checkMovieStatus(); // Recheck saved status after refresh
     } finally {
-      setRefreshing(false);
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 100);
     }
   }, [refetch]);
 
@@ -102,98 +105,106 @@ const MovieDetails = () => {
 
   return (
     <View className="bg-primary flex-1">
-      <RefreshableScroll
-        contentContainerStyle={{
-          paddingBottom: 80,
-        }}
-        refreshing={refreshing || checkingStatus}
-        onRefresh={onRefresh}
+      <RefreshableWrapper
+        refreshing={refreshing}
+        loading={loading && !movie}
+        indicatorColor="#AB8BFF"
       >
-        <View className="relative">
-          {movie?.poster_path ? (
-            <Image
-              source={{
-                uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        <RefreshableScroll
+          contentContainerStyle={{
+            paddingBottom: 80,
+          }}
+          refreshing={refreshing || checkingStatus}
+          onRefresh={onRefresh}
+        >
+          <View className="relative">
+            {movie?.poster_path ? (
+              <Image
+                source={{
+                  uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+                }}
+                className="w-full h-[550px]"
+              />
+            ) : (
+              <Image
+                source={{
+                  uri: "https://placehold.co/600x900/1a1a1a/FFFFFF.png",
+                }}
+                className="w-full h-[550px]"
+                resizeMode="stretch"
+              />
+            )}
+
+            {/* Save Button - Positioned on top right of poster */}
+            <View
+              className="absolute top-5 right-5 z-10"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
               }}
-              className="w-full h-[550px]"
-            />
-          ) : (
-            <Image
-              source={{ uri: "https://placehold.co/600x900/1a1a1a/FFFFFF.png" }}
-              className="w-full h-[550px]"
-              resizeMode="stretch"
-            />
-          )}
-
-          {/* Save Button - Positioned on top right of poster */}
-          <View
-            className="absolute top-5 right-5 z-10"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
-            }}
-          >
-            <SaveButton isSaved={isSaved} onPress={handleSavePress} />
-          </View>
-        </View>
-
-        <View className="flex-col item-start justify-center mt-5 px-5">
-          <Text className="text-white font-bold text-xl">{movie?.title}</Text>
-
-          <View className="flex-row item-center gap-x-1 mt-2">
-            <Text className="text-light-200 text-sm">
-              {movie?.release_date?.split("-")[0]}
-            </Text>
-            <Text className="text-light-200 text-sm">{movie?.runtime}m</Text>
+            >
+              <SaveButton isSaved={isSaved} onPress={handleSavePress} />
+            </View>
           </View>
 
-          <View className="flex-row item-center self-start bg-dark-100 px-2 py-1 mt-2 gap-x-1 rounded-md">
-            <Ionicons name="star" size={16} color="#FFD700" />
-            <Text className="text-white font-bold text-sm">
-              {Math.round(movie?.vote_average ?? 0)}/10
-            </Text>
-            <Text className="text-light-200 text-sm">
-              ({movie?.vote_count} votes)
-            </Text>
-          </View>
+          <View className="flex-col item-start justify-center mt-5 px-5">
+            <Text className="text-white font-bold text-xl">{movie?.title}</Text>
 
-          <MovieInfo label="Overview" value={movie?.overview} />
-          <MovieInfo
-            label="Genres"
-            value={movie?.genres?.map((g) => g.name).join(" - ")}
-          />
+            <View className="flex-row item-center gap-x-1 mt-2">
+              <Text className="text-light-200 text-sm">
+                {movie?.release_date?.split("-")[0]}
+              </Text>
+              <Text className="text-light-200 text-sm">{movie?.runtime}m</Text>
+            </View>
 
-          <View className="flex flex-row justify-between w-1/2">
+            <View className="flex-row item-center self-start bg-dark-100 px-2 py-1 mt-2 gap-x-1 rounded-md">
+              <Ionicons name="star" size={16} color="#FFD700" />
+              <Text className="text-white font-bold text-sm">
+                {Math.round(movie?.vote_average ?? 0)}/10
+              </Text>
+              <Text className="text-light-200 text-sm">
+                ({movie?.vote_count} votes)
+              </Text>
+            </View>
+
+            <MovieInfo label="Overview" value={movie?.overview} />
             <MovieInfo
-              label="Budget"
-              value={
-                movie?.budget != 0 && movie?.budget != undefined
-                  ? `$${movie.budget / 1_000_000} million`
-                  : `N/A`
-              }
+              label="Genres"
+              value={movie?.genres?.map((g) => g.name).join(" - ")}
             />
+
+            <View className="flex flex-row justify-between w-1/2">
+              <MovieInfo
+                label="Budget"
+                value={
+                  movie?.budget != 0 && movie?.budget != undefined
+                    ? `$${movie.budget / 1_000_000} million`
+                    : `N/A`
+                }
+              />
+              <MovieInfo
+                label="Revenue"
+                value={
+                  movie?.revenue != 0 && movie?.revenue != undefined
+                    ? `$${(Math.round(movie.revenue) / 1_000_000).toFixed(2)} million`
+                    : `N/A`
+                }
+              />
+            </View>
+
             <MovieInfo
-              label="Revenue"
+              label="Production Company"
               value={
-                movie?.revenue != 0 && movie?.revenue != undefined
-                  ? `$${(Math.round(movie.revenue) / 1_000_000).toFixed(2)} million`
-                  : `N/A`
+                movie?.production_companies.map((c) => c.name).join(" - ") ||
+                "N/A"
               }
             />
           </View>
-
-          <MovieInfo
-            label="Production Company"
-            value={
-              movie?.production_companies.map((c) => c.name).join(" - ") ||
-              "N/A"
-            }
-          />
-        </View>
-      </RefreshableScroll>
+        </RefreshableScroll>
+      </RefreshableWrapper>
 
       {/* Go Back Button */}
       <TouchableOpacity
