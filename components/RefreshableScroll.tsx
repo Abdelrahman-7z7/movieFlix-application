@@ -9,11 +9,16 @@ type RefreshableScrollProps = ScrollViewProps & {
   progressBackgroundColor?: string;
 };
 
+/**
+ * ScrollView with pull-to-refresh functionality
+ * Note: The native RefreshControl indicator is hidden (transparent)
+ * Use RefreshableWrapper to show a custom top indicator
+ */
 const RefreshableScroll = ({
   children,
   onRefresh,
   refreshing: refreshingProp,
-  indicatorColor = "#fff",
+  indicatorColor = "#AB8BFF",
   androidColors,
   progressBackgroundColor = "transparent",
   ...rest
@@ -26,8 +31,13 @@ const RefreshableScroll = ({
     if (refreshingProp === undefined) setInternalRefreshing(true);
     try {
       await onRefresh();
+    } catch (error) {
+      console.error("Refresh error:", error);
     } finally {
-      if (refreshingProp === undefined) setInternalRefreshing(false);
+      // Add small delay to ensure smooth animation
+      setTimeout(() => {
+        if (refreshingProp === undefined) setInternalRefreshing(false);
+      }, 100);
     }
   }, [onRefresh, refreshingProp]);
 
@@ -39,9 +49,9 @@ const RefreshableScroll = ({
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          tintColor={indicatorColor} // iOS
-          colors={androidColors ?? [indicatorColor]} // Android
-          progressBackgroundColor={progressBackgroundColor}
+          tintColor="transparent" // Hide iOS indicator
+          colors={["transparent"]} // Hide Android indicator
+          progressBackgroundColor="transparent"
         />
       }
       {...rest}
