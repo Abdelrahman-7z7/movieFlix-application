@@ -1,11 +1,21 @@
 import "react-native-url-polyfill/auto";
 import { Stack } from "expo-router";
 import "./globals.css";
-import { StatusBar } from "react-native";
+import { StatusBar, LogBox } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useNavigation } from "expo-router";
 import { useEffect } from "react";
 import * as Linking from "expo-linking";
+
+// Suppress Reanimated false positive warning
+// This warning occurs when NativeWind (which uses Reanimated) processes styles
+// with React Native's Animated values. It's a false positive since we're using
+// React Native's Animated API correctly, not Reanimated directly.
+if (__DEV__) {
+  LogBox.ignoreLogs([
+    "[Reanimated] Reading from `value` during component render",
+  ]);
+}
 
 export default function RootLayout() {
   const router = useRouter();
