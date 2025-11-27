@@ -75,3 +75,31 @@ interface TrendingCardProps {
   movie: TrendingMovie;
   index: number;
 }
+
+interface UserMetadata {
+  username?: string;
+  full_name?: string;
+  bio?: string;
+  birth_date?: string;
+  phone_number?: string;
+  avatar_url?: string;
+  avatar_path?: string;
+}
+
+interface Profile {
+  id: string;
+  avatar_url?: string;
+  avatar_path?: string;
+  full_name?: string;
+  bio?: string;
+  birth_date?: string;
+  phone_number?: string;
+  [key: string]: any; // in case Supabase adds extra fields
+}
+
+interface AuthUser {
+  id: string;
+  email: string;
+  created_at: string;
+  user_metadata: UserMetadata;
+}
